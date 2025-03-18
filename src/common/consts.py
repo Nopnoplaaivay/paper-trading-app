@@ -3,8 +3,8 @@ import os
 class SQLServerConsts:
     ASYNC_DNS = os.getenv("ASYNC_DNS")
 
-    COMMON_SCHEMA = "frmSystemAuth"
-    DATA_SCHEMA = "frmSystemData"
+    AUTH_SCHEMA = "prmAuth"
+    DATA_SCHEMA = "prmData"
 
 
 class CommonConsts:

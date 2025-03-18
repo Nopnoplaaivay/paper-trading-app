@@ -15,23 +15,24 @@ class BaseRepo(Generic[T]):
     query_builder: BaseQueryBuilder
     session_scope: Callable[..., Session]
 
-    @classmethod
-    async def data_frame_factory(cls, cur) -> pd.DataFrame:
-        if cur.description is None:
-            return pd.DataFrame()
-        columns = [column[0] for column in cur.description]
-        results = [list(row) for row in cur.fetchall()]
-        return pd.DataFrame(results, columns=columns, dtype=np.dtype("O"))
+    # @classmethod
+    # async def data_frame_factory(cls, cur) -> pd.DataFrame:
+    #     if cur.description is None:
+    #         return pd.DataFrame()
+    #     columns = [column[0] for column in cur.description]
+    #     results = [list(row) for row in cur.fetchall()]
+    #     return pd.DataFrame(results, columns=columns, dtype=np.dtype("O"))
 
     @classmethod
     async def row_factory(cls, cur) -> List[Dict]:
-        if cur.description is None:
+        if cur.keys() is None:
             return []
-        columns = [column[0] for column in cur.description]
+        columns = [column for column in cur.keys()]
         results = []
         for row in cur.fetchall():
             results.append(dict(zip(columns, row)))
         return results
+
 
     @classmethod
     async def insert_many(cls, records: List[Dict], returning):
@@ -99,7 +100,7 @@ class BaseRepo(Generic[T]):
 
     @classmethod
     async def get_all(cls) -> List[Dict]:
-        with cls.session_scope() as session:
+        async with cls.session_scope() as session:
             sql = (
                 """
                 SELECT *
@@ -128,7 +129,8 @@ class BaseRepo(Generic[T]):
             cls.query_builder.full_table_name,
             condition_query.sql,
         )
-        with cls.session_scope() as session:
-            cur = session.connection().exec_driver_sql(sql, tuple(condition_query.params)).cursor
+        async with cls.session_scope() as session:
+            conn = await session.connection()
+            cur = await conn.exec_driver_sql(sql, tuple(condition_query.params))
             records = await cls.row_factory(cur=cur)
             return records

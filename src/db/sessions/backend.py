@@ -8,11 +8,11 @@ from contextvars import ContextVar
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.connectors import AsyncSQLServerConnectorPool
-from src.common.consts import CommonConsts
+from src.common.consts import SQLServerConsts
 from src.utils.logger import LOGGER
 
 SESSIONS = {}
-DNS = CommonConsts.ASYNC_DNS
+DNS = SQLServerConsts.ASYNC_DNS
 MIN_CONN = 2
 MAX_CONN = 10000
 

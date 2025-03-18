@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Enum as SQLAlchemyEnum
 from enum import Enum
 
 from src.common.consts import SQLServerConsts
@@ -12,16 +11,16 @@ class Role(Enum):
     BROKER = "broker"
 
 
-class User(Base):
+class Users(Base):
     __tablename__ = 'users'
     __table_args__ = (
-        {"schema": SQLServerConsts.ALPHA_RESULTS_SCHEMA},
+        {"schema": SQLServerConsts.AUTH_SCHEMA},
         )
-    __sqlServerType__ = f"[{SQLServerConsts.ALPHA_RESULTS_SCHEMA}].[{__tablename__}]"
+    __sqlServerType__ = f"[{SQLServerConsts.AUTH_SCHEMA}].[{__tablename__}]"
 
-    __id__ = Column(Integer, primary_key=True, autoincrement=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True, nullable=False)
     account = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(Enum(Role), default=Role.CLIENT)
+    role = Column(SQLAlchemyEnum(Role), default=Role.CLIENT)
     type_broker = Column(String)
     type_client = Column(String)
