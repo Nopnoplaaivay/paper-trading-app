@@ -1,3 +1,4 @@
+from typing import Optional
 from src.modules.base.dto import BaseDTO
 
 class RegisterDTO(BaseDTO):
@@ -11,6 +12,16 @@ class RegisterDTO(BaseDTO):
 class LoginDTO(BaseDTO):
     account: str
     password: str
+
+class LogoutDTO(BaseDTO):
+    sessionId: str
+    userId: int
+    role: str
+    iat: Optional[int] = None
+    exp: Optional[int] = None
+
+class RefreshDTO(LogoutDTO):
+    signature: str
 
 class LoginResDTO(BaseDTO):
     access_token: str

@@ -16,6 +16,8 @@ class CommonConsts:
     ACCESS_TOKEN_EXPIRES_IN = 3600
     REFRESH_TOKEN_EXPIRES_IN = 86400
 
+    DEBUG = os.getenv("DEBUG") 
+
 
 class MessageConsts:
     CREATED = "Created"

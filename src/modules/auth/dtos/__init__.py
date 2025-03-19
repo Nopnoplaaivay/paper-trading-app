@@ -1,1 +1,1 @@
-from .auth import RegisterDTO, LoginDTO, LoginResDTO, RefreshResDTO
+from .auth import RegisterDTO, LoginDTO, LogoutDTO, RefreshDTO

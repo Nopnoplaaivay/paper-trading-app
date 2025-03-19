@@ -8,7 +8,7 @@ from typing import Dict, Optional
 
 from src.common.consts import MessageConsts, CommonConsts
 from src.common.responses.exceptions.base_exceptions import BaseExceptionResponse
-from src.modules.auth.dtos import RegisterDTO, LoginDTO
+from src.modules.auth.dtos import RegisterDTO, LoginDTO, LogoutDTO, RefreshDTO
 from src.modules.auth.types import JwtPayload, RefreshPayload
 from src.modules.users.entities import Users, Sessions
 from src.modules.users.repositories import UsersRepo, SessionsRepo
@@ -110,7 +110,7 @@ class AuthService:
         return {"accessToken": access_token, "refreshToken": refresh_token}
 
     @classmethod
-    async def logout(self, payload: JwtPayload):
+    async def logout(cls, payload: LogoutDTO):
         key = f"SESSION_BLACKLIST:{payload.userId}:{payload.sessionId}"
         black_list[key] = payload.exp
         session = await SessionsRepo.get_by_condition(
@@ -124,7 +124,7 @@ class AuthService:
         LOGGER.info(f"User {payload.userId} has been logged out")
 
     @classmethod
-    async def refresh_token(cls, payload: RefreshPayload):
+    async def refresh_token(cls, payload: RefreshDTO):
         sessions = await SessionsRepo.get_by_condition(
             {Sessions.id.name: payload.sessionId}
         )

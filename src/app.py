@@ -4,34 +4,20 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from src.api import crawl_api_router, token_api_router
+from src.api import auth_api_router
 from src.common.consts import MessageConsts, CommonConsts
 from src.common.responses.exceptions import BaseExceptionResponse
 from src.utils.logger import LOGGER
 
 
-crawl_app = FastAPI(
-    title="CRAWL APP FIINX",
+app = FastAPI(
+    title="PORTFOLIO MANAGEMENT APP",
     description="Welcome to API documentation",
-    # root_path="/api/v1",
     docs_url="/docs" if CommonConsts.DEBUG else None,
-    # openapi_url="/docs/openapi.json",
     redoc_url="/docs" if CommonConsts.DEBUG else None,
 )
-crawl_cors = CORSMiddleware(
-    crawl_app, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
-)
-
-token_app = FastAPI(
-    title="CRAWL APP FIINX",
-    description="Welcome to API documentation",
-    # root_path="/api/v1",
-    docs_url="/docs" if CommonConsts.DEBUG else None,
-    # openapi_url="/docs/openapi.json",
-    redoc_url="/docs" if CommonConsts.DEBUG else None,
-)
-token_cors = CORSMiddleware(
-    token_app, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
+app_cors = CORSMiddleware(
+    app, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
 )
 
 
@@ -88,25 +74,14 @@ async def response_exception_handler(request: Request, exception):
     )
 
 
-@crawl_app.exception_handler(RequestValidationError)
+@app.exception_handler(RequestValidationError)
 async def exception_handler(request, exception):
     return await pydantic_exception_handler(request=request, exception=exception)
 
 
-@crawl_app.exception_handler(Exception)
+@app.exception_handler(Exception)
 async def exception_handler(request, exception):
     return await response_exception_handler(request=request, exception=exception)
 
 
-@token_app.exception_handler(RequestValidationError)
-async def exception_handler(request, exception):
-    return await pydantic_exception_handler(request=request, exception=exception)
-
-
-@token_app.exception_handler(Exception)
-async def exception_handler(request, exception):
-    return await response_exception_handler(request=request, exception=exception)
-
-
-crawl_app.include_router(prefix="/api/v1", router=crawl_api_router)
-token_app.include_router(prefix="/api/v1", router=token_api_router)
+app.include_router(prefix="/api/v1", router=auth_api_router)

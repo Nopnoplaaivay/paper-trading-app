@@ -1,8 +1,7 @@
 import argparse
 import uvicorn
 from uvicorn.config import LOGGING_CONFIG
-from src.app import crawl_cors as crawl_app  # type: ignore # noqa: F401
-from src.app import token_cors as token_app  # type: ignore # noqa: F401
+from src.app import app
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
