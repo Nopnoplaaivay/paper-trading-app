@@ -5,5 +5,5 @@ import pytz
 class TimeUtils:
     @classmethod
     def get_current_vn_time(cls):
-        utcnow = datetime.datetime.utcnow()
+        utcnow = datetime.datetime.now()
         return pytz.timezone('Asia/Ho_Chi_Minh').utcoffset(utcnow) + utcnow

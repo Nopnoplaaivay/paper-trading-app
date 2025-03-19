@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum as SQLAlchemyEnum
+from sqlalchemy.orm import relationship
 from enum import Enum
 
 from src.common.consts import SQLServerConsts
@@ -24,3 +25,4 @@ class Users(Base):
     role = Column(SQLAlchemyEnum(Role), default=Role.CLIENT)
     type_broker = Column(String)
     type_client = Column(String)
+    sessions = relationship('Sessions', back_populates='user', cascade='all, delete-orphan')

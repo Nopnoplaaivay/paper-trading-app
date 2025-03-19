@@ -10,6 +10,11 @@ class SQLServerConsts:
 class CommonConsts:
     ROOT_FOLDER = os.path.abspath(os.path.join(os.path.abspath(__file__), 3 * "../"))
 
+    AT_SECRET_KEY = os.getenv("AT_SECRET_KEY")
+    RT_SECRET_KEY = os.getenv("RT_SECRET_KEY")
+    ACCESS_TOKEN_EXPIRES_IN = 3600
+    REFRESH_TOKEN_EXPIRES_IN = 86400
+
 
 class MessageConsts:
     CREATED = "Created"

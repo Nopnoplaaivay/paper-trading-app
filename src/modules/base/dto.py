@@ -6,13 +6,11 @@ from pydantic import BaseModel, ValidationError, Extra
 T = TypeVar("T")
 
 
-class BaseDTO(Generic[T], BaseModel):
+class BaseDTO(BaseModel, Generic[T]):
     class Config:
-        allow_population_by_field_name = True
-        orm_mode = False
-        # validate_assignment = True
+        populate_by_name = True
+        from_attributes = False
         arbitrary_types_allowed = True
-        # anystr_strip_whitespace = True
         extra = Extra.ignore
 
     def __init__(self, **data):
@@ -26,7 +24,7 @@ class BaseDTO(Generic[T], BaseModel):
                     default = self.__class__.__fields__[attr].default
                     if default is not None:
                         data[attr] = default
-            print("new DTO worked", data)
+            # print("new DTO worked", data)
             super().__init__(**data)
         except ValidationError as exception:
             raise exception

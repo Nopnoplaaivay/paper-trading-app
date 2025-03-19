@@ -11,3 +11,10 @@ class RegisterDTO(BaseDTO):
 class LoginDTO(BaseDTO):
     account: str
     password: str
+
+class LoginResDTO(BaseDTO):
+    access_token: str
+    refresh_token: str
+
+class RefreshResDTO(BaseDTO):
+    access_token: str
