@@ -36,9 +36,10 @@ class BaseRepo(Generic[T]):
 
     @classmethod
     async def insert_many(cls, records: List[Dict], returning):
-        with cls.session_scope() as session:
+        async with cls.session_scope() as session:
             insert_query = cls.query_builder.insert_many(records=records, returning=returning)
-            cur = session.connection().exec_driver_sql(insert_query.sql, tuple(insert_query.params)).cursor
+            conn = await session.connection()
+            cur = await conn.exec_driver_sql(insert_query.sql, tuple(insert_query.params))
             if returning:
                 return await cls.row_factory(cur=cur)
             else:
