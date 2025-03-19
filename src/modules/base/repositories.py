@@ -59,7 +59,7 @@ class BaseRepo(Generic[T]):
     ):
         if len(identity_columns) == 0:
             raise Exception("missing require identity columns")
-        with cls.session_scope() as session:
+        async with cls.session_scope() as session:
             query_values = cls.query_builder.generate_values(records=records, text_clauses=text_clauses)
             update_columns = query_values.columns.copy()
             for col in identity_columns:
@@ -80,7 +80,9 @@ class BaseRepo(Generic[T]):
                 ) s
                 inner join {cls.query_builder.full_table_name} t on {sql_conditions}
             """
-            cur = session.connection().exec_driver_sql(sql, tuple(query_values.params)).cursor
+            # print(sql)
+            conn = await session.connection()
+            cur = await conn.exec_driver_sql(sql, tuple(query_values.params))
             if returning:
                 results = await cls.row_factory(cur=cur)
             else:
@@ -135,3 +137,17 @@ class BaseRepo(Generic[T]):
             cur = await conn.exec_driver_sql(sql, tuple(condition_query.params))
             records = await cls.row_factory(cur=cur)
             return records
+        
+    @classmethod
+    async def delete(cls, conditions: Dict):
+        condition_query = cls.query_builder.where(conditions)
+        sql = """
+            DELETE FROM %s
+            WHERE %s
+        """ % (
+            cls.query_builder.full_table_name,
+            condition_query.sql,
+        )
+        async with cls.session_scope() as session:
+            conn = await session.connection()
+            await conn.exec_driver_sql(sql, tuple(condition_query.params))

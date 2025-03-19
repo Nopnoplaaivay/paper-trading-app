@@ -2,74 +2,106 @@ import os
 import hashlib
 import uuid
 import jwt
+from cachetools import TTLCache
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
-from src.common.consts import MessageConsts
+from src.common.consts import MessageConsts, CommonConsts
 from src.common.responses.exceptions.base_exceptions import BaseExceptionResponse
 from src.modules.auth.dtos import RegisterDTO, LoginDTO
 from src.modules.auth.types import JwtPayload, RefreshPayload
 from src.modules.users.entities import Users, Sessions
 from src.modules.users.repositories import UsersRepo, SessionsRepo
 from src.utils.jwt_utils import JWTUtils
+from src.utils.logger import LOGGER
+
+
+black_list = TTLCache(maxsize=1000, ttl=24 * 60 * 60)
 
 
 class AuthService:
     @classmethod
     async def register(cls, payload: RegisterDTO) -> None:
         if await UsersRepo.get_by_condition({Users.account.name: payload.account}):
-            raise BaseExceptionResponse(http_code=400, status_code=400, message=MessageConsts.BAD_REQUEST, errors="Account already exists")
+            raise BaseExceptionResponse(
+                http_code=400,
+                status_code=400,
+                message=MessageConsts.BAD_REQUEST,
+                errors="Account already exists",
+            )
         if payload.password != payload.confirm_password:
-            raise BaseExceptionResponse(http_code=400, status_code=400, message=MessageConsts.BAD_REQUEST, errors="Passwords do not match")
+            raise BaseExceptionResponse(
+                http_code=400,
+                status_code=400,
+                message=MessageConsts.BAD_REQUEST,
+                errors="Passwords do not match",
+            )
+        salted_password = f"{CommonConsts.SALT}{payload.password}"
         await UsersRepo.insert(
             record={
                 Users.account.name: payload.account,
-                Users.password.name: hashlib.sha256(payload.password.encode('utf-8')).hexdigest(),
+                Users.password.name: hashlib.sha256(
+                    salted_password.encode("utf-8")
+                ).hexdigest(),
                 Users.role.name: payload.role,
                 Users.type_broker.name: payload.type_broker,
-                Users.type_client.name: payload.type_client
+                Users.type_client.name: payload.type_client,
             },
-            returning=False
+            returning=False,
         )
+        LOGGER.info(f"User {payload.account} has been created")
 
     @classmethod
     async def login(cls, payload: LoginDTO) -> Dict[str, str]:
-        records = await UsersRepo.get_by_condition({Users.account.name: payload.account})
+        records = await UsersRepo.get_by_condition(
+            {Users.account.name: payload.account}
+        )
         user = records[0] if records else None
         if not user:
             raise BaseExceptionResponse(
-                http_code=400, status_code=400, message=MessageConsts.BAD_REQUEST, errors="Account does not exist"
+                http_code=400,
+                status_code=400,
+                message=MessageConsts.BAD_REQUEST,
+                errors="Account does not exist",
             )
-        if user[Users.password.name] != hashlib.sha256(payload.password.encode('utf-8')).hexdigest():
-            raise BaseExceptionResponse(http_code=401, status_code=401, message=MessageConsts.UNAUTHORIZED, errors="Invalid credentials")
+        salted_password = f"{CommonConsts.SALT}{payload.password}"
+        if (
+            user[Users.password.name]
+            != hashlib.sha256(salted_password.encode("utf-8")).hexdigest()
+        ):
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Invalid credentials",
+            )
         return await cls.create_token_pair(user)
 
     @classmethod
     async def create_token_pair(cls, user: Dict) -> Dict[str, str]:
+        session_id = str(uuid.uuid4())
         signature = os.urandom(16).hex()
         expires_at = datetime.now() + timedelta(hours=1)
         session = await SessionsRepo.insert(
             record={
+                Sessions.id.name: session_id,
                 Sessions.user_id.name: user["id"],
                 Sessions.signature.name: signature,
-                Sessions.expires_at.name: expires_at
+                Sessions.expires_at.name: expires_at,
             },
-            returning=True
+            returning=True,
         )
-
-        print(session[Sessions.id.name])
-        print(user)
 
         at_payload = JwtPayload(
-            sessionId=session[Sessions.id.name], 
-            userId=user[Users.id.name], 
-            role=user[Users.role.name]
+            sessionId=session[Sessions.id.name],
+            userId=user[Users.id.name],
+            role=user[Users.role.name],
         )
         rt_payload = RefreshPayload(
-            sessionId=session[Sessions.id.name], 
-            userId=user[Users.id.name], 
+            sessionId=session[Sessions.id.name],
+            userId=user[Users.id.name],
             role=user[Users.role.name],
-            signature=signature
+            signature=signature,
         )
 
         access_token = JWTUtils.create_access_token(payload=at_payload)
@@ -77,40 +109,67 @@ class AuthService:
 
         return {"accessToken": access_token, "refreshToken": refresh_token}
 
+    @classmethod
+    async def logout(self, payload: JwtPayload):
+        key = f"SESSION_BLACKLIST:{payload.userId}:{payload.sessionId}"
+        black_list[key] = payload.exp
+        session = await SessionsRepo.get_by_condition(
+            {Sessions.id.name: payload.sessionId}
+        )
+        if session:
+            await SessionsRepo.delete({Sessions.id.name: payload.sessionId})
 
-    # async def logout(self, payload: Dict[str, str]):
-    #     session_id = payload["session_id"]
-    #     user_id = payload["user_id"]
-    #     exp = payload["exp"]
-    #     key = f"SESSION_BLACKLIST:{user_id}:{session_id}"
-    #     await self._add_to_blacklist(key, exp)
-    #     session = await SessionEntity.find_one({"id": session_id})
-    #     if session:
-    #         await SessionEntity.delete(session)
+        # show black list
+        LOGGER.info(f"Black list: {black_list}")
+        LOGGER.info(f"User {payload.userId} has been logged out")
 
-    # async def refresh_token(self, payload: Dict[str, str]):
-    #     session = await SessionEntity.find_one({"id": payload["session_id"]})
-    #     if not session or session.signature != payload["signature"]:
-    #         sessions = await SessionEntity.find({"user_id": payload["user_id"]})
-    #         await SessionEntity.delete_many(sessions)
-    #         raise HTTPException(status_code=401, detail="Invalid session")
-    #     new_signature = self._create_signature()
-    #     access_token = create_access_token(payload)
-    #     refresh_token = create_refresh_token({**payload, "signature": new_signature})
-    #     await SessionEntity.update(session.id, {"signature": new_signature})
-    #     return {"access_token": access_token, "refresh_token": refresh_token}
+    @classmethod
+    async def refresh_token(cls, payload: RefreshPayload):
+        sessions = await SessionsRepo.get_by_condition(
+            {Sessions.id.name: payload.sessionId}
+        )
+        if len(sessions) == 0:
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Invalid session",
+            )
+        session = sessions[0]
+        if session[Sessions.signature.name] != payload.signature:
+            # Remove all sessions of the user
+            await SessionsRepo.delete(
+                {Sessions.user_id.name: payload.userId}
+            )
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Invalid signature"
+            )
+        
+        new_signature = os.urandom(16).hex()
+        await SessionsRepo.update(
+            record={
+                Sessions.id.name: payload.sessionId,
+                Sessions.signature.name: new_signature,
+            },
+            identity_columns=[Sessions.id.name],
+            returning=False,
+        )
 
-    # ==================== PRIVATE METHODS ================== #
+        access_token_payload = JwtPayload(
+            sessionId=session[Sessions.id.name],
+            userId=payload.userId,
+            role=payload.role,
+        )
+        refresh_token_payload = RefreshPayload(
+            sessionId=session[Sessions.id.name],
+            userId=payload.userId,
+            role=payload.role,
+            signature=new_signature,
+        )
 
-    # def _create_signature(self) -> str:
-    #     return secrets.token_hex(16)
-
-    # async def _add_to_blacklist(self, key: str, exp: int):
-    #     ttl = exp * 1000 - int(datetime.utcnow().timestamp() * 1000)
-    #     await self.cache_manager.set(key, True, ttl)
-
-
-    # def get_unique_username(self, given_name: str, family_name: str) -> str:
-    #     base_username = (given_name + family_name).normalize("NFD").encode("ascii", "ignore").decode().replace(" ", "")
-    #     random_suffix = secrets.token_urlsafe(6)
-    #     return f"{base_username}{random_suffix}"
+        access_token = JWTUtils.create_access_token(payload=access_token_payload)
+        refresh_token = JWTUtils.create_refresh_token(payload=refresh_token_payload)
+        return {"accessToken": access_token, "refreshToken": refresh_token}

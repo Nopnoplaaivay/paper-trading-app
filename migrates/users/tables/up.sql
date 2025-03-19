@@ -11,7 +11,7 @@ CREATE TABLE [prmAuth].[users] (
 );
 
 CREATE TABLE [prmAuth].[sessions] (
-    [id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    [id] NVARCHAR(36) PRIMARY KEY NOT NULL,
     [signature] NVARCHAR(255) NOT NULL, 
     [expires_at] DATETIME NOT NULL,
     [role] NVARCHAR(50), 

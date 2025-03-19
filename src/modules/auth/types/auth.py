@@ -2,7 +2,7 @@ from typing import Dict, Optional
 from pydantic import BaseModel
 
 class JwtPayload(BaseModel):
-    sessionId: int
+    sessionId: str
     userId: int
     role: str
     iat: Optional[int] = None

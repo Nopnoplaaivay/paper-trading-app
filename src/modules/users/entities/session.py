@@ -15,7 +15,7 @@ class Sessions(Base):
         )
     __sqlServerType__ = f"[{SQLServerConsts.AUTH_SCHEMA}].[{__tablename__}]"
 
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True, nullable=False)
+    id = Column(String, primary_key=True, index=True, nullable=False)
     signature = Column(String, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
