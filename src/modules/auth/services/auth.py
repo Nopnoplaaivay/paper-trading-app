@@ -13,6 +13,7 @@ from src.modules.auth.types import JwtPayload, RefreshPayload
 from src.modules.users.entities import Users, Sessions
 from src.modules.users.repositories import UsersRepo, SessionsRepo
 from src.utils.jwt_utils import JWTUtils
+from src.utils.time_utils import TimeUtils
 from src.utils.logger import LOGGER
 
 
@@ -81,13 +82,19 @@ class AuthService:
     async def create_token_pair(cls, user: Dict) -> Dict[str, str]:
         session_id = str(uuid.uuid4())
         signature = os.urandom(16).hex()
-        expires_at = datetime.now() + timedelta(hours=1)
+        current_vn_time = TimeUtils.get_current_vn_time()
+        expires_at = current_vn_time + timedelta(
+            seconds=CommonConsts.REFRESH_TOKEN_EXPIRES_IN
+        )
         session = await SessionsRepo.insert(
             record={
                 Sessions.id.name: session_id,
-                Sessions.user_id.name: user["id"],
+                Sessions.created_at.name: current_vn_time,
+                Sessions.updated_at.name: current_vn_time,
+                Sessions.user_id.name: user[Users.id.name],
                 Sessions.signature.name: signature,
                 Sessions.expires_at.name: expires_at,
+                Sessions.role.name: user[Users.role.name],
             },
             returning=True,
         )
@@ -138,20 +145,19 @@ class AuthService:
         session = sessions[0]
         if session[Sessions.signature.name] != payload.signature:
             # Remove all sessions of the user
-            await SessionsRepo.delete(
-                {Sessions.user_id.name: payload.userId}
-            )
+            await SessionsRepo.delete({Sessions.user_id.name: payload.userId})
             raise BaseExceptionResponse(
                 http_code=401,
                 status_code=401,
                 message=MessageConsts.UNAUTHORIZED,
-                errors="Invalid signature"
+                errors="Invalid signature",
             )
-        
+
         new_signature = os.urandom(16).hex()
         await SessionsRepo.update(
             record={
                 Sessions.id.name: payload.sessionId,
+                Sessions.updated_at.name: TimeUtils.get_current_vn_time(),
                 Sessions.signature.name: new_signature,
             },
             identity_columns=[Sessions.id.name],
@@ -169,7 +175,7 @@ class AuthService:
             role=payload.role,
             signature=new_signature,
         )
-
         access_token = JWTUtils.create_access_token(payload=access_token_payload)
-        refresh_token = JWTUtils.create_refresh_token(payload=refresh_token_payload)
+        refresh_token = JWTUtils.create_refresh_token(payload=refresh_token_payload)  # expires in = session.expies in
+        
         return {"accessToken": access_token, "refreshToken": refresh_token}

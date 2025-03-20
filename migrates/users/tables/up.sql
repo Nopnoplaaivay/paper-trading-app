@@ -12,9 +12,11 @@ CREATE TABLE [prmAuth].[users] (
 
 CREATE TABLE [prmAuth].[sessions] (
     [id] NVARCHAR(36) PRIMARY KEY NOT NULL,
+    [created_at] DATETIME NOT NULL,
+    [updated_at] DATETIME NOT NULL,
     [signature] NVARCHAR(255) NOT NULL, 
     [expires_at] DATETIME NOT NULL,
-    [role] NVARCHAR(50), 
+    [role] NVARCHAR(10), 
     [user_id] INT NOT NULL,
     CONSTRAINT FK_user_sessions FOREIGN KEY (user_id) REFERENCES [prmAuth].[users](id) ON DELETE CASCADE
 );

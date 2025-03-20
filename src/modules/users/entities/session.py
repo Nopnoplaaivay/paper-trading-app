@@ -16,7 +16,10 @@ class Sessions(Base):
     __sqlServerType__ = f"[{SQLServerConsts.AUTH_SCHEMA}].[{__tablename__}]"
 
     id = Column(String, primary_key=True, index=True, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
     signature = Column(String, nullable=False)
     expires_at = Column(DateTime, nullable=False)
+    role = Column(String)
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     user = relationship('Users', back_populates='sessions')
