@@ -19,9 +19,10 @@ async def login(payload: LoginDTO):
     response = SuccessResponse(http_code=200, status_code=200, message=MessageConsts.SUCCESS, data=token_pair)
     return JSONResponse(status_code=response.http_code, content=response.to_dict())
 
-@auth_router.get("/logout")
+@auth_router.post("/logout")
 async def logout(payload: LogoutDTO):
     await AuthService.logout(payload=payload)
+    return BaseResponse(http_code=200, status_code=200, message=MessageConsts.SUCCESS)
 
 @auth_router.post("/refresh")
 async def refresh_token(payload: RefreshDTO):

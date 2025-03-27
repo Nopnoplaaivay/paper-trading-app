@@ -10,8 +10,8 @@ from src.common.consts import MessageConsts, CommonConsts
 from src.common.responses.exceptions.base_exceptions import BaseExceptionResponse
 from src.modules.auth.dtos import RegisterDTO, LoginDTO, LogoutDTO, RefreshDTO
 from src.modules.auth.types import JwtPayload, RefreshPayload
-from src.modules.users.entities import Users, Sessions
-from src.modules.users.repositories import UsersRepo, SessionsRepo
+from src.modules.users.entities import Users, Sessions, Accounts
+from src.modules.users.repositories import UsersRepo, SessionsRepo, AccountsRepo
 from src.utils.jwt_utils import JWTUtils
 from src.utils.time_utils import TimeUtils
 from src.utils.logger import LOGGER
@@ -38,7 +38,7 @@ class AuthService:
                 errors="Passwords do not match",
             )
         salted_password = f"{CommonConsts.SALT}{payload.password}"
-        await UsersRepo.insert(
+        user = await UsersRepo.insert(
             record={
                 Users.account.name: payload.account,
                 Users.password.name: hashlib.sha256(
@@ -48,7 +48,13 @@ class AuthService:
                 Users.type_broker.name: payload.type_broker,
                 Users.type_client.name: payload.type_client,
             },
-            returning=False,
+            returning=True,
+        )
+        await AccountsRepo.insert(
+            record={
+                Accounts.user_id.name: user[Users.id.name],
+            },
+            returning=False
         )
         LOGGER.info(f"User {payload.account} has been created")
 
@@ -179,3 +185,127 @@ class AuthService:
         refresh_token = JWTUtils.create_refresh_token(payload=refresh_token_payload)  # expires in = session.expies in
         
         return {"accessToken": access_token, "refreshToken": refresh_token}
+
+    @classmethod    
+    async def verify_access_token(cls, access_token: str):
+        try:
+            decoded_payload = JWTUtils.decode_token(token=access_token, secret_key=CommonConsts.AT_SECRET_KEY)
+
+            session_id = decoded_payload.get("sessionId")
+            user_id = decoded_payload.get("userId")
+            role = decoded_payload.get("role")
+            iat = decoded_payload.get("iat")
+            exp = decoded_payload.get("exp")
+
+            # Check if the token is blacklisted
+            blacklist_key = f"SESSION_BLACKLIST:{user_id}:{session_id}"
+            if blacklist_key in black_list:
+                sessions = await SessionsRepo.delete({Sessions.user_id.name: user_id})
+                
+                raise BaseExceptionResponse(
+                    http_code=401,
+                    status_code=401,
+                    message=MessageConsts.UNAUTHORIZED,
+                    errors="Token has been revoked",
+                )
+
+            # Validate the session associated with the token
+            sessions = await SessionsRepo.get_by_condition({Sessions.id.name: session_id})
+            if not sessions:
+                raise BaseExceptionResponse(
+                    http_code=401,
+                    status_code=401,
+                    message=MessageConsts.UNAUTHORIZED,
+                    errors="Invalid session",
+                )
+
+            session = sessions[0]
+            if session[Sessions.user_id.name] != user_id:
+                raise BaseExceptionResponse(
+                    http_code=401,
+                    status_code=401,
+                    message=MessageConsts.UNAUTHORIZED,
+                    errors="Session does not match user",
+                )
+
+            # Return the decoded payload as a JwtPayload object
+            return JwtPayload(
+                sessionId=session_id,
+                userId=user_id,
+                role=role,
+                iat=iat,
+                exp=exp
+            )
+
+        except jwt.ExpiredSignatureError:
+            # Token has expired
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Token has expired",
+            )
+        except jwt.InvalidTokenError:
+            # Token is invalid (e.g., tampered or malformed)
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Invalid token",
+            )
+        
+    @classmethod
+    async def verify_refresh_token(cls, refresh_token: str):
+        try:
+            decoded_payload = JWTUtils.decode_token(token=refresh_token, secret_key=CommonConsts.RT_SECRET_KEY)
+
+            session_id = decoded_payload.get("sessionId")
+            user_id = decoded_payload.get("userId")
+            role = decoded_payload.get("role")
+            iat = decoded_payload.get("iat")
+            exp = decoded_payload.get("exp")
+
+            # Validate the session associated with the token
+            sessions = await SessionsRepo.get_by_condition({Sessions.id.name: session_id})
+            if not sessions:
+                raise BaseExceptionResponse(
+                    http_code=401,
+                    status_code=401,
+                    message=MessageConsts.UNAUTHORIZED,
+                    errors="Invalid session",
+                )
+
+            session = sessions[0]
+            if session[Sessions.user_id.name] != user_id:
+                raise BaseExceptionResponse(
+                    http_code=401,
+                    status_code=401,
+                    message=MessageConsts.UNAUTHORIZED,
+                    errors="Session does not match user",
+                )
+
+            # Return the decoded payload as a RefreshPayload object
+            return RefreshPayload(
+                sessionId=session_id,
+                userId=user_id,
+                role=role,
+                iat=iat,
+                exp=exp
+            )
+
+        except jwt.ExpiredSignatureError:
+            # Token has expired
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Token has expired",
+            )
+        except jwt.InvalidTokenError:
+            # Token is invalid (e.g., tampered or malformed)
+            raise BaseExceptionResponse(
+                http_code=401,
+                status_code=401,
+                message=MessageConsts.UNAUTHORIZED,
+                errors="Invalid token",
+            )

@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from src.api import auth_api_router
+from src.api import api_router
 from src.common.consts import MessageConsts, CommonConsts
 from src.common.responses.exceptions import BaseExceptionResponse
 from src.utils.logger import LOGGER
@@ -84,4 +84,4 @@ async def exception_handler(request, exception):
     return await response_exception_handler(request=request, exception=exception)
 
 
-app.include_router(prefix="/api/v1", router=auth_api_router)
+app.include_router(prefix="/api/v1", router=api_router)

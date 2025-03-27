@@ -7,7 +7,7 @@ CREATE TABLE [prmAuth].[users] (
     [password] NVARCHAR(255) NOT NULL,
     [role] NVARCHAR(50), 
     [type_broker] NVARCHAR(255) NULL,
-    [type_client] NVARCHAR(255) NULL
+    [type_client] NVARCHAR(255) NULL,
 );
 
 CREATE TABLE [prmAuth].[sessions] (
@@ -19,4 +19,21 @@ CREATE TABLE [prmAuth].[sessions] (
     [role] NVARCHAR(10), 
     [user_id] INT NOT NULL,
     CONSTRAINT FK_user_sessions FOREIGN KEY (user_id) REFERENCES [prmAuth].[users](id) ON DELETE CASCADE
+);
+
+CREATE TABLE [prmAuth].[accounts] (
+    [account_id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    [total_cash] Integer DEFAULT 0,
+    [available_cash] Integer DEFAULT 0,
+    [withdrawable_cash] Integer DEFAULT 0,
+    [stock_value] Integer DEFAULT 0,
+    [total_debt] Integer DEFAULT 0,
+    [net_asset_value] Integer DEFAULT 0,
+    [securing_amount] Integer DEFAULT 0,
+    [receiving_amount] Integer DEFAULT 0,
+    [purchasing_power] Integer DEFAULT 0,
+    [trading_token] NVARCHAR(MAX) DEFAULT '',
+    [trading_token_exp] DATETIME,
+    [user_id] INT NOT NULL,
+    CONSTRAINT FK_user_accounts FOREIGN KEY (user_id) REFERENCES [prmAuth].[users](id) ON DELETE CASCADE
 );

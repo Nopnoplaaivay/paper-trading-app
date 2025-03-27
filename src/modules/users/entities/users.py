@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, DateTime, Integer, String, Enum as SQLAlchemyEnum
 from sqlalchemy.orm import relationship
 from enum import Enum
 
@@ -26,3 +26,4 @@ class Users(Base):
     type_broker = Column(String)
     type_client = Column(String)
     sessions = relationship('Sessions', back_populates='user', cascade='all, delete-orphan')
+    accounts = relationship('Accounts', back_populates='user', cascade='all, delete-orphan')

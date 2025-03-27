@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from src.common.consts import MessageConsts
 from src.modules.base.dto import BaseDTO
 from src.modules.auth.handlers import auth_router
+from src.modules.users.handlers import user_router
 
 
 class ErrorDetailModel(BaseDTO):
@@ -18,7 +19,7 @@ class ErrorResponseModel(BaseDTO):
     error: ErrorDetailModel
 
 
-auth_api_router = APIRouter(
+api_router = APIRouter(
     default_response_class=JSONResponse,
     responses={
         400: {"model": ErrorResponseModel},
@@ -28,9 +29,11 @@ auth_api_router = APIRouter(
     },
 )
 
-auth_api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+api_router.include_router(user_router, prefix="/users", tags=["users"])
+api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
-@auth_api_router.get("/healthcheck", include_in_schema=False)
+@api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
     return JSONResponse(status_code=200, content={"message": MessageConsts.SUCCESS})

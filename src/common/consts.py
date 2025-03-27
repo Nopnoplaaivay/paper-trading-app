@@ -5,6 +5,8 @@ class SQLServerConsts:
 
     AUTH_SCHEMA = "prmAuth"
     DATA_SCHEMA = "prmData"
+    TRADING_SCHEMA = "prmTrading"
+    AUDIT_SCHEMA = "prmAudit"
 
 
 class CommonConsts:

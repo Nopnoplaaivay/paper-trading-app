@@ -10,3 +10,4 @@ pyjwt==2.7.0
 python-dateutil==2.8.2
 pydantic_settings==2.0.2
 pydantic==2.10.5
+cachetools==5.5.2
