@@ -10,8 +10,10 @@ from src.common.consts import MessageConsts, CommonConsts
 from src.common.responses.exceptions.base_exceptions import BaseExceptionResponse
 from src.modules.auth.dtos import RegisterDTO, LoginDTO, LogoutDTO, RefreshDTO
 from src.modules.auth.types import JwtPayload, RefreshPayload
-from src.modules.users.entities import Users, Sessions, Accounts
-from src.modules.users.repositories import UsersRepo, SessionsRepo, AccountsRepo
+from src.modules.users.entities import Users, Sessions
+from src.modules.users.repositories import UsersRepo, SessionsRepo
+from src.modules.accounts.entities import Accounts
+from src.modules.accounts.repositories import AccountsRepo
 from src.utils.jwt_utils import JWTUtils
 from src.utils.time_utils import TimeUtils
 from src.utils.logger import LOGGER

@@ -3,10 +3,10 @@ import os
 class SQLServerConsts:
     ASYNC_DNS = os.getenv("ASYNC_DNS")
 
-    AUTH_SCHEMA = "prmAuth"
-    DATA_SCHEMA = "prmData"
-    TRADING_SCHEMA = "prmTrading"
-    AUDIT_SCHEMA = "prmAudit"
+    AUTH_SCHEMA = "KVS_AUTH"
+    ACCOUNTS_SCHEMA = "KVS_ACCOUNTS"
+    TRADING_SCHEMA = "KVS_TRADING"
+    AUDIT_SCHEMA = "KVS_AUDIT"
 
 
 class CommonConsts:

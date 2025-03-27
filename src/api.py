@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from src.common.consts import MessageConsts
 from src.modules.base.dto import BaseDTO
 from src.modules.auth.handlers import auth_router
+from src.modules.accounts.handlers import accounts_router
 from src.modules.users.handlers import user_router
 
 
@@ -30,7 +31,8 @@ api_router = APIRouter(
 )
 
 
-api_router.include_router(user_router, prefix="/users", tags=["users"])
+api_router.include_router(accounts_router, prefix="/accounts", tags=["accounts"])
+# api_router.include_router(user_router, prefix="/users", tags=["users"])
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 
