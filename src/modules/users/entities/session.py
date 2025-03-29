@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 
@@ -15,7 +15,7 @@ class Sessions(Base):
         )
     __sqlServerType__ = f"[{SQLServerConsts.AUTH_SCHEMA}].[{__tablename__}]"
 
-    id = Column(String, primary_key=True, index=True, nullable=False)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()), index=True, nullable=False)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     signature = Column(String, nullable=False)

@@ -5,8 +5,7 @@ class SQLServerConsts:
 
     AUTH_SCHEMA = "KVS_AUTH"
     ACCOUNTS_SCHEMA = "KVS_ACCOUNTS"
-    TRADING_SCHEMA = "KVS_TRADING"
-    AUDIT_SCHEMA = "KVS_AUDIT"
+    ORDERS_SCHEMA = "KVS_ORDERS"
 
 
 class CommonConsts:

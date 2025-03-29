@@ -1,11 +1,13 @@
-use KVSecurities
+use KVSecurities;
 
-CREATE SCHEMA [KVS_AUTH]
+CREATE SCHEMA [KVS_AUTH];
 GO
 
-CREATE SCHEMA [KVS_ACCOUNTS]
+CREATE SCHEMA [KVS_ACCOUNTS];
 GO
 
+CREATE SCHEMA [KVS_ORDERS];
+GO
 
 CREATE TABLE [KVS_AUTH].[users] (
     [id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
@@ -17,7 +19,7 @@ CREATE TABLE [KVS_AUTH].[users] (
 );
 
 CREATE TABLE [KVS_AUTH].[sessions] (
-    [id] NVARCHAR(36) PRIMARY KEY NOT NULL,
+    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
     [created_at] DATETIME NOT NULL,
     [updated_at] DATETIME NOT NULL,
     [signature] NVARCHAR(255) NOT NULL, 
@@ -28,7 +30,7 @@ CREATE TABLE [KVS_AUTH].[sessions] (
 );
 
 CREATE TABLE [KVS_ACCOUNTS].[accounts] (
-    [account_id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
     [total_cash] Integer DEFAULT 0,
     [available_cash] Integer DEFAULT 0,
     [withdrawable_cash] Integer DEFAULT 0,
@@ -42,4 +44,30 @@ CREATE TABLE [KVS_ACCOUNTS].[accounts] (
     [trading_token_exp] DATETIME,
     [user_id] INT NOT NULL,
     CONSTRAINT FK_user_accounts FOREIGN KEY (user_id) REFERENCES [KVS_AUTH].[users](id) ON DELETE CASCADE
+);
+
+CREATE TABLE [KVS_ACCOUNTS].[transactions] (
+    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
+    [account_id] UNIQUEIDENTIFIER NOT NULL,
+    [transaction_type] NVARCHAR(10),
+    [amount] Integer DEFAULT 0,
+    [payment_method] NVARCHAR(10),
+    [created_at] DATETIME NOT NULL,
+    CONSTRAINT FK_account_transactions FOREIGN KEY (account_id) REFERENCES [KVS_ACCOUNTS].[accounts](id)
+);
+
+CREATE TABLE [KVS_ORDERS].[orders] (
+    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
+    [account_id] UNIQUEIDENTIFIER NOT NULL,
+    [side] NVARCHAR(10) NOT NULL,
+    [symbol] NVARCHAR(10) NOT NULL,
+    [price] Integer DEFAULT 0 NOT NULL,
+    [quantity] Integer DEFAULT 0 NOT NULL,
+    [order_type] NVARCHAR(10) NOT NULL,
+    [order_status] NVARCHAR(10) DEFAULT 'PENDING' NOT NULL,
+    [filled_quantity] Integer DEFAULT 0,
+    [last_quantity] Integer DEFAULT 0,
+    [error] NVARCHAR(255) DEFAULT NULL,
+    [created_at] DATETIME NOT NULL,
+    CONSTRAINT FK_account_orders FOREIGN KEY (account_id) REFERENCES [KVS_ACCOUNTS].[accounts](id)
 );
