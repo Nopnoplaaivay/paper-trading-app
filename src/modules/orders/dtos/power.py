@@ -6,6 +6,7 @@ class PowerDTO(BaseDTO):
     symbol: str
     price: int
 
+
 class PowerResponseDTO(BaseDTO):
     account_id: str
     ppse: int

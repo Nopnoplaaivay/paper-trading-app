@@ -4,7 +4,7 @@ from src.modules.auth.types.auth import JwtPayload
 from src.common.responses.exceptions import BaseExceptionResponse
 
 
-def Payload(request: Request) -> JwtPayload:
+def UserPayload(request: Request) -> JwtPayload:
     user = getattr(request.state, "user", None)
     if not user:
         raise BaseExceptionResponse(

@@ -6,14 +6,14 @@ from src.common.responses.base import BaseResponse
 from src.common.responses import SuccessResponse
 from src.modules.accounts.handlers import accounts_router
 from src.modules.accounts.services import AccountsService
-from src.modules.auth.decorators import Payload
+from src.modules.auth.decorators import UserPayload
 from src.modules.auth.guards import auth_guard
 from src.modules.auth.types import JwtPayload
 from src.modules.accounts.dtos import DepositDTO, WithdrawDTO
 
 
 @accounts_router.get("/balance", dependencies=[Depends(auth_guard)])
-async def get_balance(payload: JwtPayload = Depends(Payload)):
+async def get_balance(payload: JwtPayload = Depends(UserPayload)):
     account_balance = await AccountsService.get_balance(payload=payload)
     if not account_balance:
         response = BaseResponse(
@@ -32,8 +32,8 @@ async def get_balance(payload: JwtPayload = Depends(Payload)):
     return JSONResponse(status_code=response.http_code, content=response.to_dict())
 
 @accounts_router.post("/deposit", dependencies=[Depends(auth_guard)])
-async def deposit(payload: DepositDTO):
-    account_balance = await AccountsService.deposit(payload=payload)
+async def deposit(payload: DepositDTO, user: JwtPayload = Depends(UserPayload)):
+    account_balance = await AccountsService.deposit(payload=payload, user=user)
     if not account_balance:
         response = BaseResponse(
             http_code=404,
@@ -51,8 +51,8 @@ async def deposit(payload: DepositDTO):
     return JSONResponse(status_code=response.http_code, content=response.to_dict())
 
 @accounts_router.post("/withdraw", dependencies=[Depends(auth_guard)])
-async def withdraw(payload: WithdrawDTO):
-    account_balance = await AccountsService.withdraw(payload=payload)
+async def withdraw(payload: WithdrawDTO, user: JwtPayload = Depends(UserPayload)):
+    account_balance = await AccountsService.withdraw(payload=payload, user=user)
     if not account_balance:
         response = BaseResponse(
             http_code=404,

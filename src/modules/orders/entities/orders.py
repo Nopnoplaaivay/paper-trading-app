@@ -19,7 +19,7 @@ class Orders(Base):
     side = Column(String, nullable=False)
     symbol = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
-    quantity = Column(Integer, nullable=False)
+    order_quantity = Column(Integer, nullable=False)
     order_type = Column(String, nullable=False)
     order_status = Column(String, nullable=False)
     filled_quantity = Column(Integer, nullable=False)

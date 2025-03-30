@@ -62,7 +62,7 @@ CREATE TABLE [KVS_ORDERS].[orders] (
     [side] NVARCHAR(10) NOT NULL,
     [symbol] NVARCHAR(10) NOT NULL,
     [price] Integer DEFAULT 0 NOT NULL,
-    [quantity] Integer DEFAULT 0 NOT NULL,
+    [order_quantity] Integer DEFAULT 0 NOT NULL,
     [order_type] NVARCHAR(10) NOT NULL,
     [order_status] NVARCHAR(10) DEFAULT 'PENDING' NOT NULL,
     [filled_quantity] Integer DEFAULT 0,

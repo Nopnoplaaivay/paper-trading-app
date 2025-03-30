@@ -1,1 +1,1 @@
-from .payload import Payload
+from .payload import UserPayload

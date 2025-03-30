@@ -20,12 +20,26 @@ class AccountsService:
             return None
 
     @classmethod
-    async def deposit(cls, payload: DepositDTO):
+    async def deposit(cls, payload: DepositDTO, user: JwtPayload):
         conditions = {Accounts.id.name: payload.account_id}
         amount = payload.amount
+        if amount <= 0:
+            raise BaseExceptionResponse(
+                http_code=400,
+                status_code=400,
+                message=MessageConsts.BAD_REQUEST,
+                errors="Amount must be greater than zero",
+            )
         records = await cls.repo.get_by_condition(conditions)
         if records:
             record = records[0]
+            if record[Accounts.user_id.name] != user.userId:
+                raise BaseExceptionResponse(
+                    http_code=403,
+                    status_code=403,
+                    message=MessageConsts.FORBIDDEN,
+                    errors="You do not have permission to this account",
+                )
             total_cash = record[Accounts.total_cash.name] + amount
             available_cash = record[Accounts.available_cash.name] + amount
             withdrawable_cash = record[Accounts.withdrawable_cash.name] + amount
@@ -58,7 +72,7 @@ class AccountsService:
             return None
 
     @classmethod
-    async def withdraw(cls, payload: WithdrawDTO):
+    async def withdraw(cls, payload: WithdrawDTO, user: JwtPayload):
         conditions = {Accounts.id.name: payload.account_id}
         amount = payload.amount
         if amount <= 0:
@@ -71,6 +85,13 @@ class AccountsService:
         records = await cls.repo.get_by_condition(conditions)
         if records:
             record = records[0]
+            if record[Accounts.user_id.name] != user.userId:
+                raise BaseExceptionResponse(
+                    http_code=403,
+                    status_code=403,
+                    message=MessageConsts.FORBIDDEN,
+                    errors="You do not have permission to this account",
+                )
             current_withdrawable_cash = record[Accounts.withdrawable_cash.name]
             if current_withdrawable_cash < amount:
                 raise BaseExceptionResponse(

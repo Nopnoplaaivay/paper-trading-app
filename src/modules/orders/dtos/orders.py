@@ -6,5 +6,5 @@ class OrdersDTO(BaseDTO):
     side: str
     price: int
     order_type: str = "MP"
-    quantity: int
+    order_quantity: int
     account_id: str

@@ -4,12 +4,52 @@ from src.modules.accounts.repositories import AccountsRepo
 from src.modules.orders.entities import Orders
 from src.modules.orders.repositories import OrdersRepo
 from src.modules.orders.dtos import OrdersDTO, PowerDTO, PowerResponseDTO
+from src.modules.auth.types import JwtPayload
 from src.common.consts import MessageConsts
 from src.utils.time_utils import TimeUtils
 
 
 class OrdersService:
     repo = OrdersRepo
+
+    @classmethod
+    async def create_order(cls, payload: OrdersDTO, user: JwtPayload):
+        conditions = {Accounts.id.name: payload.account_id}
+        records = await AccountsRepo.get_by_condition(conditions)
+        if records:
+            account = records[0]
+            if account[Accounts.user_id.name] != user.userId:
+                raise BaseExceptionResponse(
+                    http_code=403,
+                    status_code=403,
+                    message=MessageConsts.FORBIDDEN,
+                    errors="You do not have permission to this account",
+                )
+            new_order = await cls.repo.insert(
+                record={
+                    Orders.account_id.name: payload.account_id,
+                    Orders.side.name: payload.side,
+                    Orders.symbol.name: payload.symbol,
+                    Orders.price.name: payload.price,
+                    Orders.order_type.name: payload.order_type,
+                    Orders.order_quantity.name: payload.order_quantity,
+                    Orders.order_status.name: "PENDING",
+                    Orders.filled_quantity.name: 0,
+                    Orders.last_quantity.name: 0,
+                    Orders.error.name: "",
+                    Orders.created_at.name: TimeUtils.get_current_vn_time(),
+                },
+                returning=True
+            )
+            new_order["created_at"] = new_order["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+            return new_order
+        else:
+            raise BaseExceptionResponse(
+                http_code=404,
+                status_code=404,
+                message=MessageConsts.NOT_FOUND,
+                errors="Account not found",
+            )
 
     @classmethod
     async def get_power(cls, payload: PowerDTO):
@@ -32,16 +72,16 @@ class OrdersService:
             trade_quantity = 0 # fix after create portfolio
             ppse = price * qmax
             pp_total = account[Accounts.purchasing_power.name] 
-            power = {
-                "account_id": account_id,
-                "ppse": ppse,
-                "pp_total": pp_total,
-                "qmax": qmax,
-                "qmax_long": qmax_long,
-                "qmax_short": qmax_short,
-                "trade_quantity": trade_quantity,
-                "price": price,
-            }
+            power = PowerResponseDTO(
+                account_id=account_id,
+                ppse=ppse,
+                pp_total=pp_total,
+                qmax=qmax,
+                qmax_long=qmax_long,
+                qmax_short=qmax_short,
+                trade_quantity=trade_quantity,
+                price=price,
+            ).model_dump()
             return power
         else:
             raise BaseExceptionResponse(

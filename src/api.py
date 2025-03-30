@@ -31,9 +31,9 @@ api_router = APIRouter(
 )
 
 
-api_router.include_router(accounts_router, prefix="/accounts", tags=["accounts"])
-api_router.include_router(orders_router, prefix="/orders", tags=["orders"])
-api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
+api_router.include_router(accounts_router, prefix="/accounts-service", tags=["accounts"])
+api_router.include_router(orders_router, prefix="/orders-service", tags=["orders"])
+api_router.include_router(auth_router, prefix="/auth-service", tags=["auth"])
 
 
 @api_router.get("/healthcheck", include_in_schema=False)
