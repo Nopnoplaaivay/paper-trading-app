@@ -1,4 +1,5 @@
 import os
+import random
 
 class SQLServerConsts:
     ASYNC_DNS = os.getenv("ASYNC_DNS")
@@ -6,6 +7,7 @@ class SQLServerConsts:
     AUTH_SCHEMA = "KVS_AUTH"
     ACCOUNTS_SCHEMA = "KVS_ACCOUNTS"
     ORDERS_SCHEMA = "KVS_ORDERS"
+    MARKET_DATA_SCHEMA = "KVS_MARKET_DATA"
 
 
 class CommonConsts:
@@ -31,3 +33,12 @@ class MessageConsts:
     CONFLICT = "Conflict"
     INVALID_OBJECT_ID = "Invalid object id"
     INTERNAL_SERVER_ERROR = "Unknown internal server error"
+
+class DNSEConsts:
+    BROKER = 'datafeed-lts.dnse.com.vn'
+    PORT = 443
+    CLIENT_ID = f'python-json-mqtt-ws-sub-{random.randint(0, 1000)}'
+    FIRST_RECONNECT_DELAY = 1
+    RECONNECT_RATE = 2
+    MAX_RECONNECT_COUNT = 12
+    MAX_RECONNECT_DELAY = 60

@@ -25,6 +25,28 @@ class OrdersService:
                     message=MessageConsts.FORBIDDEN,
                     errors="You do not have permission to this account",
                 )
+            if account[Accounts.purchasing_power.name] < payload.price * payload.order_quantity:
+                raise BaseExceptionResponse(
+                    http_code=400,
+                    status_code=400,
+                    message=MessageConsts.INVALID_INPUT,
+                    errors="Not enough purchasing power",
+                )
+            if payload.order_quantity <= 0:
+                raise BaseExceptionResponse(
+                    http_code=400,
+                    status_code=400,
+                    message=MessageConsts.INVALID_INPUT,
+                    errors="Order quantity must be greater than 0",
+                )
+            if payload.price <= 0:
+                raise BaseExceptionResponse(
+                    http_code=400,
+                    status_code=400,
+                    message=MessageConsts.INVALID_INPUT,
+                    errors="Price must be greater than 0",
+                )
+            vn_current_time = TimeUtils.get_current_vn_time()
             new_order = await cls.repo.insert(
                 record={
                     Orders.account_id.name: payload.account_id,
@@ -37,7 +59,8 @@ class OrdersService:
                     Orders.filled_quantity.name: 0,
                     Orders.last_quantity.name: 0,
                     Orders.error.name: "",
-                    Orders.created_at.name: TimeUtils.get_current_vn_time(),
+                    Orders.created_at.name: vn_current_time,
+                    Orders.updated_at.name: vn_current_time,
                 },
                 returning=True
             )

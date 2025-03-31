@@ -71,3 +71,30 @@ CREATE TABLE [KVS_ORDERS].[orders] (
     [created_at] DATETIME NOT NULL,
     CONSTRAINT FK_account_orders FOREIGN KEY (account_id) REFERENCES [KVS_ACCOUNTS].[accounts](id)
 );
+
+
+CREATE TABLE [KVS_MARKET_DATA].[stock_info] (
+    id INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    floor_code NVARCHAR(MAX) NOT NULL,
+    symbol NVARCHAR(MAX) NOT NULL,
+    trading_time DATETIME NOT NULL,
+    security_type NVARCHAR(MAX) NULL,
+    ceiling_price INT NULL,
+    floor_price INT NULL,
+    highest_price INT NULL,
+    lowest_price INT NULL,
+    avg_price INT NULL,
+    buy_foreign_quantity INT NULL,
+    sell_foreign_quantity INT NULL,
+    current_room INT NULL,
+    accumulated_value INT NULL,
+    accumulated_volume INT NULL,
+    match_price INT NULL,
+    match_quantity INT NULL,
+    changed FLOAT NULL,
+    changed_ratio FLOAT NULL,
+    estimated_price INT NULL,
+    trading_session NVARCHAR(MAX) NULL,
+    security_status NVARCHAR(MAX) NULL,
+    odd_lot_security_status NVARCHAR(MAX) NULL
+);
