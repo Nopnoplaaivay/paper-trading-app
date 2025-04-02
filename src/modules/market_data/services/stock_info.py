@@ -2,11 +2,13 @@ import json
 import asyncio
 import datetime
 
+from src.common.consts import SQLServerConsts
 from src.modules.market_data.entities import StockInfo
 from src.modules.market_data.repositories import StockInfoRepo
 from src.modules.market_data.dnse_service import DNSEService
 from src.modules.market_data.configs import Topics
 from src.utils.logger import LOGGER
+
 
 class StockInfoService(DNSEService):
     topic = Topics.STOCK_INFO
@@ -23,12 +25,14 @@ class StockInfoService(DNSEService):
 
             trading_time = datetime.datetime.fromisoformat(
                 data.get("tradingTime").replace("Z", "+00:00")
-            ) 
+            )
             coroutine = cls.repo.insert(
                 record={
                     StockInfo.floor_code.name: data.get("floorCode"),
                     StockInfo.symbol.name: data.get("symbol"),
-                    StockInfo.trading_time.name: trading_time,
+                    StockInfo.trading_time.name: datetime.datetime.fromisoformat(
+                        data.get("tradingTime").replace("Z", "+00:00")
+                    ).strftime(SQLServerConsts.TRADING_TIME_FORMAT),
                     StockInfo.security_type.name: data.get("securityType"),
                     StockInfo.ceiling_price.name: data.get("ceilingPrice"),
                     StockInfo.floor_price.name: data.get("floorPrice"),
@@ -47,9 +51,11 @@ class StockInfoService(DNSEService):
                     StockInfo.estimated_price.name: data.get("estimatedPrice"),
                     StockInfo.trading_session.name: data.get("tradingSession"),
                     StockInfo.security_status.name: data.get("securityStatus"),
-                    StockInfo.odd_lot_security_status.name: data.get("oddLotSecurityStatus"),
+                    StockInfo.odd_lot_security_status.name: data.get(
+                        "oddLotSecurityStatus"
+                    ),
                 },
-                returning=False
+                returning=False,
             )
 
             asyncio.run_coroutine_threadsafe(coroutine, cls.loop)

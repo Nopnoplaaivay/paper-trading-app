@@ -134,7 +134,7 @@ class DNSEService:
         """Wrapper để kiểm tra và chạy async callback nếu cần."""
         result = cls.on_message(client, userdata, msg)
         if asyncio.iscoroutine(result):
-            asyncio.create_task(result)
+            asyncio.run_coroutine_threadsafe(result, cls.loop)
     
     @classmethod
     @abstractmethod

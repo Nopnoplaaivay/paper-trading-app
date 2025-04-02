@@ -4,10 +4,12 @@ import random
 class SQLServerConsts:
     ASYNC_DNS = os.getenv("ASYNC_DNS")
 
-    AUTH_SCHEMA = "KVS_AUTH"
-    ACCOUNTS_SCHEMA = "KVS_ACCOUNTS"
-    ORDERS_SCHEMA = "KVS_ORDERS"
-    MARKET_DATA_SCHEMA = "KVS_MARKET_DATA"
+    AUTH_SCHEMA = "Auth"
+    INVESTORS_SCHEMA = "Investors"
+    ORDERS_SCHEMA = "Orders"
+    MARKET_DATA_SCHEMA = "Market_data"
+
+    TRADING_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 class CommonConsts:
@@ -32,6 +34,7 @@ class MessageConsts:
     NOT_FOUND = "Not found"
     CONFLICT = "Conflict"
     INVALID_OBJECT_ID = "Invalid object id"
+    INVALID_INPUT = "Invalid input"
     INTERNAL_SERVER_ERROR = "Unknown internal server error"
 
 class DNSEConsts:

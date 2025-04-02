@@ -11,12 +11,12 @@ from src.modules.base.entities import Base
 class Transactions(Base):
     __tablename__ = 'transactions'
     __table_args__ = (
-        {"schema": SQLServerConsts.ACCOUNTS_SCHEMA},
+        {"schema": SQLServerConsts.INVESTORS_SCHEMA},
         )
-    __sqlServerType__ = f"[{SQLServerConsts.ACCOUNTS_SCHEMA}].[{__tablename__}]"
+    __sqlServerType__ = f"[{SQLServerConsts.INVESTORS_SCHEMA}].[{__tablename__}]"
 
     id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()), index=True, nullable=False)
-    account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.ACCOUNTS_SCHEMA}.accounts.id"), nullable=False)
+    account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.INVESTORS_SCHEMA}.accounts.id"), nullable=False)
     transaction_type = Column(String, nullable=False)
     amount = Column(Integer, nullable=False)
     payment_method = Column(String, nullable=False)

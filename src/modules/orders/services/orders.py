@@ -1,7 +1,10 @@
+
+
+from src.cache import OrderCache
 from src.common.responses.exceptions import BaseExceptionResponse
 from src.modules.accounts.entities import Accounts
 from src.modules.accounts.repositories import AccountsRepo
-from src.modules.orders.entities import Orders
+from src.modules.orders.entities import Orders, OrderStatus, OrderSide
 from src.modules.orders.repositories import OrdersRepo
 from src.modules.orders.dtos import OrdersDTO, PowerDTO, PowerResponseDTO
 from src.modules.auth.types import JwtPayload
@@ -55,7 +58,7 @@ class OrdersService:
                     Orders.price.name: payload.price,
                     Orders.order_type.name: payload.order_type,
                     Orders.order_quantity.name: payload.order_quantity,
-                    Orders.order_status.name: "PENDING",
+                    Orders.order_status.name: OrderStatus.PENDING.value,
                     Orders.filled_quantity.name: 0,
                     Orders.last_quantity.name: 0,
                     Orders.error.name: "",
@@ -65,6 +68,11 @@ class OrdersService:
                 returning=True
             )
             new_order["created_at"] = new_order["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+            new_order["updated_at"] = new_order["updated_at"].strftime("%Y-%m-%d %H:%M:%S")
+
+            # Add order to Redis cache
+            await OrderCache.add_order(new_order)
+
             return new_order
         else:
             raise BaseExceptionResponse(

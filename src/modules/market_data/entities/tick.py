@@ -16,4 +16,5 @@ class Tick(Base):
     match_price = Column(Float)
     match_quantity = Column(Float)
     trading_time = Column(DateTime)
+    side = Column(String)
     session = Column(String)
