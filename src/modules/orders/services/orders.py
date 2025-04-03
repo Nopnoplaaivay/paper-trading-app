@@ -1,8 +1,8 @@
-# from src.cache import OrderCache
+from src.cache import OrderCache
 from src.common.consts import SQLServerConsts
 from src.common.responses.exceptions import BaseExceptionResponse
-from src.modules.accounts.entities import Accounts
-from src.modules.accounts.repositories import AccountsRepo
+from src.modules.accounts.entities import Accounts, Portfolios
+from src.modules.accounts.repositories import AccountsRepo, PortfoliosRepo
 from src.modules.orders.entities import Orders, OrderStatus, OrderSide
 from src.modules.orders.repositories import OrdersRepo
 from src.modules.orders.dtos import OrdersDTO, PowerDTO, PowerResponseDTO
@@ -48,24 +48,61 @@ class OrdersService:
                     message=MessageConsts.INVALID_INPUT,
                     errors="Price must be greater than 0",
                 )
-
-            # Update account balance
-            securing_amount = payload.price * payload.order_quantity
-            purchasing_power = account[Accounts.purchasing_power.name] - securing_amount
-            available_cash = account[Accounts.available_cash.name] - securing_amount
-            vn_current_time = TimeUtils.get_current_vn_time()
-            await AccountsRepo.update(
-                record={
-                    Accounts.id.name: payload.account_id,
-                    Accounts.purchasing_power.name: purchasing_power,
-                    Accounts.available_cash.name: available_cash,
-                    Accounts.securing_amount.name: securing_amount
-                },
-                identity_columns=[Accounts.id.name],
-                returning=False,
+            
+            """Check security in portfolio"""
+            securities = await PortfoliosRepo.get_by_condition(
+                {Portfolios.account_id.name: payload.account_id, Portfolios.symbol.name: payload.symbol}
             )
+            if payload.side == OrderSide.SELL.value:
+                if not securities:
+                    raise BaseExceptionResponse(
+                        http_code=404,
+                        status_code=404,
+                        message=MessageConsts.NOT_FOUND,
+                        errors="Account does not have this security",
+                    )
+                security = securities[0]
+                if security[Portfolios.quantity.name] < payload.order_quantity:
+                    raise BaseExceptionResponse(
+                        http_code=400,
+                        status_code=400,
+                        message=MessageConsts.INVALID_INPUT,
+                        errors="Exceeding quantity of securities in account",
+                    ) 
+            elif payload.side == OrderSide.BUY.value:
+                """Update account balance"""
+                securing_amount = payload.price * payload.order_quantity
+                total_cash = account[Accounts.total_cash.name] - securing_amount
+                available_cash = account[Accounts.available_cash.name] - securing_amount
+                withdrawable_cash = account[Accounts.withdrawable_cash.name] - securing_amount
+                purchasing_power = account[Accounts.purchasing_power.name] - securing_amount
+                vn_current_time = TimeUtils.get_current_vn_time()
+                await AccountsRepo.update(
+                    record={
+                        Accounts.id.name: payload.account_id,
+                        Accounts.total_cash.name: total_cash,
+                        Accounts.purchasing_power.name: purchasing_power,
+                        Accounts.available_cash.name: available_cash,
+                        Accounts.withdrawable_cash.name: withdrawable_cash,
+                        Accounts.securing_amount.name: securing_amount
+                    },
+                    identity_columns=[Accounts.id.name],
+                    returning=False,
+                )
+            elif payload.side == OrderSide.SELL.value:
+                receiving_amount = payload.price * payload.order_quantity
+                stock_value = account[Accounts.stock_value.name] - receiving_amount
+                await AccountsRepo.update(
+                    record={
+                        Accounts.id.name: payload.account_id,
+                        Accounts.stock_value.name: stock_value,
+                        Accounts.receiving_amount.name: receiving_amount,
+                    },
+                    identity_columns=[Accounts.id.name],
+                    returning=False,
+                )
 
-
+            """Insert order into DB"""
             new_order = await cls.repo.insert(
                 record={
                     Orders.account_id.name: payload.account_id,
@@ -83,11 +120,12 @@ class OrdersService:
                 },
                 returning=True
             )
+
             # Add order to Redis cache
             new_order["created_at"] = new_order["created_at"].strftime(SQLServerConsts.TRADING_TIME_FORMAT)
             new_order["updated_at"] = new_order["updated_at"].strftime(SQLServerConsts.TRADING_TIME_FORMAT)
             
-            # await OrderCache.add_order(new_order)
+            await OrderCache.add_order(new_order)
             return new_order    
         else:
             raise BaseExceptionResponse(

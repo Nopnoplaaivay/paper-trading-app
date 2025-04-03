@@ -13,7 +13,7 @@ from src.modules.base.entities import Base
 
 
 class Portfolios(Base):
-    __tablename__ = "porfolios"
+    __tablename__ = "portfolios"
     __table_args__ = (
         UniqueConstraint("account_id", "symbol", name="uq_account_symbol"),
         {"schema": SQLServerConsts.INVESTORS_SCHEMA},
@@ -23,9 +23,11 @@ class Portfolios(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True, nullable=False)
     account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.INVESTORS_SCHEMA}.accounts.id"), nullable=False)
     symbol = Column(String(10), nullable=False)
+    price = Column(Integer, nullable=False, default=0)
     quantity = Column(Integer, nullable=False, default=0)
     avg_price = Column(Integer, nullable=False, default=0)
     total_cost = Column(Integer, nullable=False, default=0)
+    total_value = Column(Integer, nullable=False, default=0)
     realized_profit = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
