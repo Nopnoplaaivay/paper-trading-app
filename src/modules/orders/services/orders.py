@@ -1,6 +1,7 @@
 
 
 from src.cache import OrderCache
+from src.common.consts import SQLServerConsts
 from src.common.responses.exceptions import BaseExceptionResponse
 from src.modules.accounts.entities import Accounts
 from src.modules.accounts.repositories import AccountsRepo
@@ -16,7 +17,7 @@ class OrdersService:
     repo = OrdersRepo
 
     @classmethod
-    async def create_order(cls, payload: OrdersDTO, user: JwtPayload):
+    async def place_order(cls, payload: OrdersDTO, user: JwtPayload):
         conditions = {Accounts.id.name: payload.account_id}
         records = await AccountsRepo.get_by_condition(conditions)
         if records:
@@ -67,13 +68,12 @@ class OrdersService:
                 },
                 returning=True
             )
-            new_order["created_at"] = new_order["created_at"].strftime("%Y-%m-%d %H:%M:%S")
-            new_order["updated_at"] = new_order["updated_at"].strftime("%Y-%m-%d %H:%M:%S")
-
             # Add order to Redis cache
+            new_order["created_at"] = new_order["created_at"].strftime(SQLServerConsts.TRADING_TIME_FORMAT)
+            new_order["updated_at"] = new_order["updated_at"].strftime(SQLServerConsts.TRADING_TIME_FORMAT)
+            
             await OrderCache.add_order(new_order)
-
-            return new_order
+            return new_order    
         else:
             raise BaseExceptionResponse(
                 http_code=404,

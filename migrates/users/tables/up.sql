@@ -67,7 +67,22 @@ CREATE TABLE [Investors].[transactions] (
     CONSTRAINT FK_account_transactions FOREIGN KEY (account_id) REFERENCES [Investors].[accounts](id)
 );
 
-GO
+
+
+CREATE TABLE [Investors].[portfolios] (
+    id INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    account_id UNIQUEIDENTIFIER NOT NULL,
+    symbol VARCHAR(10) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    avg_price INT NOT NULL DEFAULT 0,
+    total_cost INT NOT NULL DEFAULT 0,
+    realized_profit INT DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT uq_account_symbol UNIQUE (account_id, symbol),
+    CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES [Investors].accounts(id)
+);
+
 
 CREATE TABLE [Orders].[orders] (
     [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
