@@ -3,6 +3,7 @@ import threading
 import requests
 import os
 import time
+import urllib3
 from abc import abstractmethod
 from paho.mqtt import client as mqtt_client
 from paho.mqtt.client import MQTTv5
@@ -11,12 +12,11 @@ from src.common.consts import DNSEConsts
 from src.modules.base.repositories import BaseRepo
 from src.utils.logger import LOGGER
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 USERNAME = os.getenv("DNSE_USERNAME")
 PASSWORD = os.getenv("DNSE_PASSWORD")
 
-
-print(DNSEConsts.BROKER, DNSEConsts.PORT)
 
 
 class DNSEService:
@@ -60,7 +60,7 @@ class DNSEService:
         login_url = "https://services.entrade.com.vn/dnse-auth-service/login"
         payload = {"username": USERNAME, "password": PASSWORD}
         try:
-            res = requests.post(login_url, json=payload)
+            res = requests.post(login_url, json=payload, verify=False)
             data = res.json()
             token = data.get("token")
         except Exception as e:
@@ -70,7 +70,7 @@ class DNSEService:
         investor_info_url = "https://services.entrade.com.vn/dnse-user-service/api/me"
         headers = {"Authorization": f"Bearer {token}"}
         try:
-            res = requests.get(investor_info_url, headers=headers)
+            res = requests.get(investor_info_url, headers=headers, verify=False)
             data = res.json()
             investor_id = data.get("investorId")
         except Exception as e:

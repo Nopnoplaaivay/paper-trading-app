@@ -1,6 +1,4 @@
-
-
-from src.cache import OrderCache
+# from src.cache import OrderCache
 from src.common.consts import SQLServerConsts
 from src.common.responses.exceptions import BaseExceptionResponse
 from src.modules.accounts.entities import Accounts
@@ -50,7 +48,24 @@ class OrdersService:
                     message=MessageConsts.INVALID_INPUT,
                     errors="Price must be greater than 0",
                 )
+
+            # Update account balance
+            securing_amount = payload.price * payload.order_quantity
+            purchasing_power = account[Accounts.purchasing_power.name] - securing_amount
+            available_cash = account[Accounts.available_cash.name] - securing_amount
             vn_current_time = TimeUtils.get_current_vn_time()
+            await AccountsRepo.update(
+                record={
+                    Accounts.id.name: payload.account_id,
+                    Accounts.purchasing_power.name: purchasing_power,
+                    Accounts.available_cash.name: available_cash,
+                    Accounts.securing_amount.name: securing_amount
+                },
+                identity_columns=[Accounts.id.name],
+                returning=False,
+            )
+
+
             new_order = await cls.repo.insert(
                 record={
                     Orders.account_id.name: payload.account_id,
@@ -72,7 +87,7 @@ class OrdersService:
             new_order["created_at"] = new_order["created_at"].strftime(SQLServerConsts.TRADING_TIME_FORMAT)
             new_order["updated_at"] = new_order["updated_at"].strftime(SQLServerConsts.TRADING_TIME_FORMAT)
             
-            await OrderCache.add_order(new_order)
+            # await OrderCache.add_order(new_order)
             return new_order    
         else:
             raise BaseExceptionResponse(
