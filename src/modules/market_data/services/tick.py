@@ -25,10 +25,7 @@ class TickService(DNSEService):
     @classmethod
     async def process_order(cls, payload_order: Dict, pending_order: Dict) -> None:
         payload_order["match_price"] = int(payload_order["match_price"] * 1000)
-        if (
-            payload_order["match_price"] == pending_order["price"]
-            and payload_order["match_quantity"] >= pending_order["order_quantity"]
-        ):
+        if payload_order["match_price"] == pending_order["price"]:
             await OrdersService.repo.update(
                 record={
                     Orders.id.name: pending_order["id"],
@@ -43,7 +40,7 @@ class TickService(DNSEService):
                 order_id=pending_order["id"],
             )
             LOGGER.info(
-                f"Order {pending_order['id']} - [{pending_order['side']} {pending_order['order_quantity']} {pending_order['symbol']}] completed."
+                f"[SUCCESS] {pending_order['side']} {pending_order['order_quantity']} [{pending_order['symbol']} | {pending_order['price']}] - {pending_order['id']}"
             )
 
             # Update account balance when completed
@@ -55,7 +52,6 @@ class TickService(DNSEService):
 
             """UPDATE ACCOUNT WHEN ORDER COMPLETED"""
             if pending_order["side"] == "SIDE_BUY":
-                print("BUY ORDER")
                 securities = await PortfoliosRepo.get_by_condition(
                     conditions={
                         Portfolios.account_id.name: pending_order["account_id"],
@@ -63,7 +59,6 @@ class TickService(DNSEService):
                     }
                 )
                 if len(securities) == 0:
-                    print("Insert new security")
                     await PortfoliosRepo.insert(
                         record={
                             Portfolios.account_id.name: pending_order["account_id"],
@@ -130,7 +125,7 @@ class TickService(DNSEService):
                     identity_columns=[Accounts.id.name],
                     returning=False,
                 )
-            elif pending_order["side"] == OrderSide.SIDE_SELL.value:
+            elif pending_order["side"] == "SIDE_SELL":
                 securities = await PortfoliosRepo.get_by_condition(
                     conditions={
                         Portfolios.account_id.name: pending_order["account_id"],
@@ -223,21 +218,6 @@ class TickService(DNSEService):
                 or not payload_order["match_quantity"]
             ):
                 return
-            print(payload_order)
-
-            # """
-            # Temporary get from db
-            # Message coming default declare as COMPLETE
-            # """
-            # conditions = {
-            #     Orders.symbol.name: payload_order["symbol"],
-            #     Orders.order_status.name: OrderStatus.PENDING.value
-            # }
-            # pending_orders = await OrdersRepo.get_by_condition(conditions=conditions)
-            # if(pending_orders):
-            #     print(f"Pending orders: {pending_orders}")
-            #     for order in pending_orders:
-            #         await cls.process_order(payload_order, order)
 
             if payload_order["side"] == "SIDE_BUY":
                 pending_orders = await OrderCache.get_orders(
@@ -254,10 +234,9 @@ class TickService(DNSEService):
                     for order_id, order in pending_orders.items():
                         await cls.process_order(payload_order, order)
 
-            # LOGGER.info(f"Received message... {payload_order["side"]} {payload_order["symbol"]}")
             await cls.repo.insert(
                 record={
-                    Tick.symbol.name: payload.get("symbol"),
+                    Tick.symbol.name: payload_order["symbol"],
                     Tick.trading_time.name: (
                         datetime.datetime.fromisoformat(
                             payload.get("time").replace("Z", "+00:00")
@@ -266,11 +245,12 @@ class TickService(DNSEService):
                         else TimeUtils.get_current_vn_time()
                     ),
                     Tick.side.name: payload_order["side"],
-                    Tick.match_price.name: payload.get("matchPrice"),
-                    Tick.match_quantity.name: payload.get("matchQtty"),
+                    Tick.match_price.name: payload_order["match_price"],
+                    Tick.match_quantity.name: payload_order["match_quantity"],
                     Tick.session.name: payload.get("session"),
                 },
                 returning=False,
             )
+            LOGGER.info(f"{payload_order['side'][5:]} {payload_order['match_quantity']} [{payload_order['symbol']} - {payload_order['match_price']}]")
         except Exception as e:
             raise Exception(f"Failed to decode message: {e}")

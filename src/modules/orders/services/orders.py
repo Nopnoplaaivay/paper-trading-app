@@ -71,11 +71,12 @@ class OrdersService:
                     ) 
             elif payload.side == OrderSide.BUY.value:
                 """Update account balance"""
-                securing_amount = payload.price * payload.order_quantity
-                total_cash = account[Accounts.total_cash.name] - securing_amount
-                available_cash = account[Accounts.available_cash.name] - securing_amount
-                withdrawable_cash = account[Accounts.withdrawable_cash.name] - securing_amount
-                purchasing_power = account[Accounts.purchasing_power.name] - securing_amount
+                order_cost = payload.price * payload.order_quantity
+                securing_amount = account[Accounts.securing_amount.name] + order_cost
+                total_cash = account[Accounts.total_cash.name] - order_cost
+                available_cash = account[Accounts.available_cash.name] - order_cost
+                withdrawable_cash = account[Accounts.withdrawable_cash.name] - order_cost
+                purchasing_power = account[Accounts.purchasing_power.name] - order_cost
                 vn_current_time = TimeUtils.get_current_vn_time()
                 await AccountsRepo.update(
                     record={
@@ -90,7 +91,8 @@ class OrdersService:
                     returning=False,
                 )
             elif payload.side == OrderSide.SELL.value:
-                receiving_amount = payload.price * payload.order_quantity
+                order_cost = payload.price * payload.order_quantity
+                receiving_amount = account[Accounts.receiving_amount.name] + order_cost
                 stock_value = account[Accounts.stock_value.name] - receiving_amount
                 await AccountsRepo.update(
                     record={
