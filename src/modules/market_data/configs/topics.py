@@ -3,5 +3,5 @@ class Topics:
     # TOP_PRICE = "plaintext/quotes/stock/TP/+"
     # SESSION = "plaintext/quotes/session/{exchangeCode}"
     # MARKET_INDEX = "plaintext/quotes/index/MI/{marketID}"
-    # OHLC = "plaintext/quotes/stock/OHLC/{symbol}"
+    OHLC_1M = "plaintext/quotes/stock/OHLC/1/+"
     TICK = "plaintext/quotes/stock/tick/+"

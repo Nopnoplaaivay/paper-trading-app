@@ -6,5 +6,14 @@ class OrdersDTO(BaseDTO):
     side: str
     price: int
     order_type: str = "MP"
-    order_quantity: int
+    qtty: int
     account_id: str
+
+class OrdersResponseDTO(BaseDTO):
+    id: str
+    side: str
+    symbol: str
+    price: int
+    qtty: int
+    order_type: str = "MP"
+    status: str = "PENDING"

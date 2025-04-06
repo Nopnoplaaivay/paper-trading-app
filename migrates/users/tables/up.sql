@@ -83,9 +83,9 @@ CREATE TABLE [Orders].[orders] (
     [side] VARCHAR(10) NOT NULL,
     [symbol] VARCHAR(10) NOT NULL,
     [price] Integer DEFAULT 0 NOT NULL,
-    [order_qtty] Integer DEFAULT 0 NOT NULL,
+    [qtty] Integer DEFAULT 0 NOT NULL,
     [order_type] VARCHAR(10) NOT NULL,
-    [order_status] VARCHAR(10) DEFAULT 'PENDING' NOT NULL,
+    [status] VARCHAR(10) DEFAULT 'PENDING' NOT NULL,
     [error] VARCHAR(255) DEFAULT NULL,
     CONSTRAINT FK_account_orders FOREIGN KEY (account_id) REFERENCES [Investors].[accounts](id)
 );

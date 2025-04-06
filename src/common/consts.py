@@ -9,7 +9,7 @@ class SQLServerConsts:
     ORDERS_SCHEMA = "Orders"
     MARKET_DATA_SCHEMA = "Market_data"
 
-    TRADING_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
+    TRADING_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class CommonConsts:
