@@ -21,7 +21,6 @@ class Portfolios(Base):
     __sqlServerType__ = f"[{SQLServerConsts.INVESTORS_SCHEMA}].[{__tablename__}]"
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True, nullable=False)
-    account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.INVESTORS_SCHEMA}.accounts.id"), nullable=False)
     symbol = Column(String(10), nullable=False)
     price = Column(Integer, nullable=False, default=0)
     quantity = Column(Integer, nullable=False, default=0)
@@ -29,5 +28,4 @@ class Portfolios(Base):
     total_cost = Column(Integer, nullable=False, default=0)
     total_value = Column(Integer, nullable=False, default=0)
     realized_profit = Column(Integer, default=0)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.INVESTORS_SCHEMA}.[accounts].[id]"), nullable=False)

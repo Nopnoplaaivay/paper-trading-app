@@ -15,11 +15,11 @@ class Sessions(Base):
         )
     __sqlServerType__ = f"[{SQLServerConsts.AUTH_SCHEMA}].[{__tablename__}]"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()), index=True, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()).lower(), index=True, nullable=False)
+    created_at = Column(String, nullable=False)
+    updated_at = Column(String, nullable=False)
     signature = Column(String, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     role = Column(String)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
-    user = relationship('Users', back_populates='sessions')
+    user_id = Column(Integer, ForeignKey(f'[{SQLServerConsts.AUTH_SCHEMA}].[user].[id]', ondelete='CASCADE'), nullable=False)
+    # user = relationship('users', back_populates='sessions')

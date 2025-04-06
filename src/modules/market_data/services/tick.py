@@ -3,7 +3,7 @@ import asyncio
 import datetime
 from typing import Dict, Any
 
-from src.cache import OrderCache
+from src.redis import TickCache, OrderCache
 from src.common.consts import SQLServerConsts
 from src.modules.market_data.entities import Tick
 from src.modules.market_data.repositories import TickRepo
@@ -202,55 +202,51 @@ class TickService(DNSEService):
                 )
 
     @classmethod
-    async def on_message(cls, client, userdata, msg):
+    async def handle_msg(cls, client, userdata, msg):
         try:
             payload = json.loads(msg.payload.decode())
-            payload_order = {
-                "symbol": payload.get("symbol"),
-                "side": payload.get("side"),
-                "match_price": payload.get("matchPrice"),
-                "match_quantity": payload.get("matchQtty"),
-            }
-            if (
-                not payload_order["symbol"]
-                or not payload_order["side"]
-                or not payload_order["match_price"]
-                or not payload_order["match_quantity"]
-            ):
+            if not payload["matchPrice"]:
                 return
 
-            if payload_order["side"] == "SIDE_BUY":
-                pending_orders = await OrderCache.get_orders(
-                    symbol=payload_order["symbol"], side="SIDE_SELL"
-                )
-                if pending_orders:
-                    for order_id, order in pending_orders.items():
-                        await cls.process_order(payload_order, order)
-            elif payload_order["side"] == "SIDE_SELL":
-                pending_orders = await OrderCache.get_orders(
-                    symbol=payload_order["symbol"], side="SIDE_BUY"
-                )
-                if pending_orders:
-                    for order_id, order in pending_orders.items():
-                        await cls.process_order(payload_order, order)
+            """ADD MATCH PRICE TO CACHE"""
+            await TickCache.add(tick=payload)
 
-            await cls.repo.insert(
-                record={
-                    Tick.symbol.name: payload_order["symbol"],
-                    Tick.trading_time.name: (
-                        datetime.datetime.fromisoformat(
-                            payload.get("time").replace("Z", "+00:00")
-                        )
-                        if payload.get("time")
-                        else TimeUtils.get_current_vn_time()
-                    ),
-                    Tick.side.name: payload_order["side"],
-                    Tick.match_price.name: payload_order["match_price"],
-                    Tick.match_quantity.name: payload_order["match_quantity"],
-                    Tick.session.name: payload.get("session"),
-                },
-                returning=False,
+
+
+            # if payload_order["side"] == "SIDE_BUY":
+            #     pending_orders = await OrderCache.get_orders(
+            #         symbol=payload_order["symbol"], side="SIDE_SELL"
+            #     )
+            #     if pending_orders:
+            #         for order_id, order in pending_orders.items():
+            #             await cls.process_order(payload_order, order)
+            # elif payload_order["side"] == "SIDE_SELL":
+            #     pending_orders = await OrderCache.get_orders(
+            #         symbol=payload_order["symbol"], side="SIDE_BUY"
+            #     )
+            #     if pending_orders:
+            #         for order_id, order in pending_orders.items():
+            #             await cls.process_order(payload_order, order)
+
+            # await cls.repo.insert(
+            #     record={
+            #         Tick.symbol.name: payload_order["symbol"],
+            #         Tick.trading_time.name: (
+            #             datetime.datetime.fromisoformat(
+            #                 payload.get("time").replace("Z", "+00:00")
+            #             )
+            #             if payload.get("time")
+            #             else TimeUtils.get_current_vn_time()
+            #         ),
+            #         Tick.side.name: payload_order["side"],
+            #         Tick.match_price.name: payload_order["match_price"],
+            #         Tick.match_quantity.name: payload_order["match_quantity"],
+            #         Tick.session.name: payload.get("session"),
+            #     },
+            #     returning=False,
+            # )
+            LOGGER.info(
+                f"{payload_order['side'][5:]} {payload_order['match_quantity']} [{payload_order['symbol']} - {payload_order['match_price']}]"
             )
-            LOGGER.info(f"{payload_order['side'][5:]} {payload_order['match_quantity']} [{payload_order['symbol']} - {payload_order['match_price']}]")
         except Exception as e:
             raise Exception(f"Failed to decode message: {e}")

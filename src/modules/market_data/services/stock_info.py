@@ -15,7 +15,7 @@ class StockInfoService(DNSEService):
     repo = StockInfoRepo
 
     @classmethod
-    def on_message(cls, client, userdata, msg):
+    def proccess_msg(cls, client, userdata, msg):
         try:
             data = json.loads(msg.payload.decode())
             LOGGER.info(f"Received message: {data}")

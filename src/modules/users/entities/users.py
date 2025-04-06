@@ -18,8 +18,7 @@ class Users(Base):
         {"schema": SQLServerConsts.AUTH_SCHEMA},
         )
     __sqlServerType__ = f"[{SQLServerConsts.AUTH_SCHEMA}].[{__tablename__}]"
-
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True, index=True)
     account = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
     role = Column(SQLAlchemyEnum(Role), default=Role.CLIENT)

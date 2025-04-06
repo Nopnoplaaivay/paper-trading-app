@@ -62,8 +62,7 @@ class AccountsService:
                     Transactions.account_id.name: payload.account_id,
                     Transactions.transaction_type.name: "deposit",
                     Transactions.amount.name: amount,
-                    Transactions.payment_method.name: payload.payment_method,
-                    Transactions.created_at.name: TimeUtils.get_current_vn_time(),
+                    Transactions.payment_method.name: payload.payment_method
                 },
                 returning=False,
             )
@@ -123,8 +122,7 @@ class AccountsService:
                     Transactions.account_id.name: payload.account_id,
                     Transactions.transaction_type.name: "withdraw",
                     Transactions.amount.name: amount,
-                    Transactions.payment_method.name: payload.payment_method,
-                    Transactions.created_at.name: TimeUtils.get_current_vn_time(),
+                    Transactions.payment_method.name: payload.payment_method
                 },
                 returning=False,
             )

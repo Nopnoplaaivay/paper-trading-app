@@ -15,10 +15,8 @@ class Transactions(Base):
         )
     __sqlServerType__ = f"[{SQLServerConsts.INVESTORS_SCHEMA}].[{__tablename__}]"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()), index=True, nullable=False)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()).lower(), index=True, nullable=False)   
     transaction_type = Column(String, nullable=False)
     amount = Column(Integer, nullable=False)
     payment_method = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    expires_at = Column(DateTime, nullable=False)
-    account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.INVESTORS_SCHEMA}.accounts.id"), nullable=False)
+    account_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.INVESTORS_SCHEMA}.[accounts].[id]"), nullable=False)

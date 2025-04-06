@@ -45,7 +45,7 @@ class DNSEService:
         cls.client.tls_set_context()
         cls.client.ws_set_options(path="/wss")
         cls.client.on_connect = cls.on_connect
-        cls.client.on_message = cls._on_message
+        cls.client.on_message = cls.on_message
         cls.FLAG_EXIT = False
 
         try:
@@ -91,7 +91,6 @@ class DNSEService:
 
     @classmethod
     def on_connect(cls, client, userdata, flags, rc, properties=None):
-        print("on_connect")
         if rc == 0 and client.is_connected():
             LOGGER.info("Connected to MQTT Broker!")
             cls.client.subscribe(cls.topic)
@@ -129,14 +128,13 @@ class DNSEService:
                 f"Unsubscribed from {cls.topic} and disconnected from MQTT Broker!"
             )
     @classmethod
-
-    def _on_message(cls, client, userdata, msg):
+    def on_message(cls, client, userdata, msg):
         """Wrapper để kiểm tra và chạy async callback nếu cần."""
-        result = cls.on_message(client, userdata, msg)
+        result = cls.handle_msg(client, userdata, msg)
         if asyncio.iscoroutine(result):
             asyncio.run_coroutine_threadsafe(result, cls.loop)
     
     @classmethod
     @abstractmethod
-    async def on_message(cls, client, userdata, msg):
+    async def handle_msg(cls, client, userdata, msg):
         pass

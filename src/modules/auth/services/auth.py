@@ -90,15 +90,12 @@ class AuthService:
     async def create_token_pair(cls, user: Dict) -> Dict[str, str]:
         session_id = str(uuid.uuid4())
         signature = os.urandom(16).hex()
-        current_vn_time = TimeUtils.get_current_vn_time()
-        expires_at = current_vn_time + timedelta(
+        expires_at = TimeUtils.get_current_vn_time() + timedelta(
             seconds=CommonConsts.REFRESH_TOKEN_EXPIRES_IN
         )
         session = await SessionsRepo.insert(
             record={
                 Sessions.id.name: session_id,
-                Sessions.created_at.name: current_vn_time,
-                Sessions.updated_at.name: current_vn_time,
                 Sessions.user_id.name: user[Users.id.name],
                 Sessions.signature.name: signature,
                 Sessions.expires_at.name: expires_at,

@@ -14,7 +14,7 @@ class Accounts(Base):
         )
     __sqlServerType__ = f"[{SQLServerConsts.INVESTORS_SCHEMA}].[{__tablename__}]"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()), index=True, nullable=False)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=lambda: str(uuid4()).lower(), index=True, nullable=False)
     total_cash = Column(Integer, nullable=False)
     available_cash = Column(Integer, nullable=False)
     withdrawable_cash = Column(Integer, nullable=False)
@@ -24,6 +24,4 @@ class Accounts(Base):
     securing_amount = Column(Integer, nullable=False)
     receiving_amount = Column(Integer, nullable=False)
     purchasing_power = Column(Integer, nullable=False)
-    trading_token = Column(String, nullable=False)
-    trading_token_exp = Column(DateTime, nullable=False)
-    user_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.AUTH_SCHEMA}.users.id"), nullable=False)
+    user_id = Column(UNIQUEIDENTIFIER, ForeignKey(f"{SQLServerConsts.AUTH_SCHEMA}.[users].[id]"), nullable=False)
