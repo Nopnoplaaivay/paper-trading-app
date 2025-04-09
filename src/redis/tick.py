@@ -12,7 +12,6 @@ class TickCache:
     async def add(cls, tick: Dict):
         cache_key = f"match_price:{tick['symbol']}"
         match_price = int(tick['matchPrice'] * 1000)
-        # LOGGER.info(f"Cached [{tick['symbol']}: {match_price}]")
         await cls.client.set(cache_key, match_price, ex=10*60*60)  # 9 hours
 
     @classmethod
