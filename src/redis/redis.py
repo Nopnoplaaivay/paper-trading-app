@@ -1,7 +1,7 @@
+import os
 import redis
-import json
-
-from typing import Dict
 
 
-RedisClient = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+# REDIS_HOST=192.168.1.6
+
+RedisClient = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379, db=0, decode_responses=True)

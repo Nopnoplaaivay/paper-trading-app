@@ -23,8 +23,6 @@ class SessionService(DNSEService):
             if session_payload.get("floorCode"):
                 LOGGER.info(f"Received message: {session_payload}")
                 await SessionCache.add(session=session_payload)
-                LOGGER.info(f"Done receiving message")
-
 
         except Exception as e:
             raise Exception(f"Failed to decode message: {e}")

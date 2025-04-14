@@ -1,11 +1,15 @@
 from src.modules.market_data.services import (
     StockInfoService, 
     TickService,
-    OHLCService
+    OHLCService,
+    SessionService,
+    StockInfoService,
 )
 
 
 if __name__ == "__main__":
     # StockInfoService.run()
     # TickService.run()
-    OHLCService.run()
+    # SessionService.run()
+    # OHLCService.run()
+    StockInfoService.run()
