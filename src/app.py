@@ -11,7 +11,7 @@ from src.utils.logger import LOGGER
 
 
 app = FastAPI(
-    title="PORTFOLIO MANAGEMENT APP",
+    title="PAPER TRADING APP",
     description="Welcome to API documentation",
     docs_url="/docs" if CommonConsts.DEBUG else None,
     redoc_url="/docs" if CommonConsts.DEBUG else None,

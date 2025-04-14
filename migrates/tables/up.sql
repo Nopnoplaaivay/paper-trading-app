@@ -58,7 +58,7 @@ CREATE TABLE [Investors].[transactions] (
 
 
 
-CREATE TABLE [Investors].[portfolios] (
+CREATE TABLE [Investors].[securities] (
     [id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,

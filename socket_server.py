@@ -10,22 +10,6 @@ app = FastAPI()
 
 connected_clients = []
 
-# @app.websocket("/ws")
-# async def websocket_endpoint(websocket: WebSocket):
-#     await websocket.accept()
-#     connected_clients.append(websocket)
-#     print("Client connected:", websocket.client)
-#
-#     try:
-#         while True:
-#             await asyncio.sleep(2)
-#             data = TradeData.get_stock_info()
-#             for client in connected_clients:
-#                 await client.send_text(data)
-#                 print("📩 Sending data to clients:", data)
-#     except Exception as e:
-#         print("Client disconnected:", websocket.client)
-#         connected_clients.remove(websocket)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

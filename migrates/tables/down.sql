@@ -3,7 +3,7 @@ use KVSecurities
 
 DROP TABLE [Investors].[accounts];
 DROP TABLE [Auth].[users];
-DROP TABLE [Investors].[portfolios];
+DROP TABLE [Investors].[securities];
 DROP TABLE [Investors].[transactions];
 DROP TABLE [Auth].[sessions];
 DROP TABLE [Market_data].[stock_info];

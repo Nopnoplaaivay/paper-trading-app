@@ -14,6 +14,11 @@ class AccountsService:
     async def get_balance(cls, payload: JwtPayload):
         conditions = {Accounts.user_id.name: payload.userId}
         records = await cls.repo.get_by_condition(conditions)
+
+        # calculate balance
+        
+
+
         if records:
             return records[0]
         else:

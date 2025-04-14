@@ -12,8 +12,8 @@ from src.common.consts import SQLServerConsts
 from src.modules.base.entities import Base
 
 
-class Portfolios(Base):
-    __tablename__ = "portfolios"
+class Securities(Base):
+    __tablename__ = "securities"
     __table_args__ = (
         UniqueConstraint("account_id", "symbol", name="uq_account_symbol"),
         {"schema": SQLServerConsts.INVESTORS_SCHEMA},
