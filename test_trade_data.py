@@ -8,3 +8,4 @@ if __name__ == "__main__":
         print("OHLCCache data retrieved successfully.")
     else:
         print("Failed to retrieve OHLCCache data.")
+
