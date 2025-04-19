@@ -2,7 +2,7 @@ import json
 import asyncio
 import datetime
 
-from src.redis import OHLCCache
+from src.cache import OHLCCache
 from src.common.consts import SQLServerConsts
 from src.modules.market_data.entities import OHLC
 from src.modules.market_data.repositories import OHLCRepo

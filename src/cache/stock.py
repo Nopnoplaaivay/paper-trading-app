@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List
 
-from src.redis import RedisClient
+from src.cache import RedisClient
 
 
 class StockCache:

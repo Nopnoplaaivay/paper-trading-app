@@ -2,7 +2,7 @@ import json
 import asyncio
 import datetime
 
-from src.redis import StockCache
+from src.cache import StockCache
 from src.common.consts import SQLServerConsts
 from src.modules.market_data.entities import StockInfo
 from src.modules.market_data.repositories import StockInfoRepo

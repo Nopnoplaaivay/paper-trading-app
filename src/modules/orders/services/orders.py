@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from src.redis import OrdersCache, TickCache
+from src.cache import OrdersCache, TickCache
 from src.common.consts import SQLServerConsts
 from src.common.responses.exceptions import BaseExceptionResponse
 from src.modules.accounts.entities import Accounts, Securities

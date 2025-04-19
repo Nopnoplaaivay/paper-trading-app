@@ -1,7 +1,7 @@
 import json
 from typing import Dict
 
-from src.redis import RedisClient
+from src.cache import RedisClient
 from src.utils.logger import LOGGER
 
 

@@ -1,0 +1,97 @@
+import json
+import redis
+import queue
+
+from src.cache.shared_state import MESSAGE_QUEUE, STOP_EVENT
+from src.cache.connector import REDIS_POOL
+from src.cache.config import DNSEConfigs
+from src.utils.logger import LOGGER
+
+class RedisWorker:
+    @classmethod
+    def loop(cls, worker_id):
+        """Vòng lặp chính của worker thread để xử lý tin nhắn từ queue."""
+        LOGGER.info(f"Worker {worker_id} start running...")
+        redis_connection = REDIS_POOL.get_connection()
+
+        if not redis_connection:
+            LOGGER.error(f"Worker {worker_id} failed to connect to Redis. Stopping worker.")
+            return
+
+        while not STOP_EVENT.is_set():
+            try:
+                topic, payload_str = MESSAGE_QUEUE.get(block=True, timeout=1)
+                cls.process_message(worker_id, topic, payload_str, redis_connection)
+
+                MESSAGE_QUEUE.task_done()
+
+            except queue.Empty:
+                continue
+            except redis.ConnectionError as e:
+                LOGGER.error(f"Worker {worker_id}: Lost Redis Connection: {e}. Reconnecting...")
+                if redis_connection:
+                    try:
+                        redis_connection.close()
+                    except:
+                        pass
+
+                # Cố gắng lấy kết nối mới
+                redis_connection = REDIS_POOL.get_connection()
+                if not redis_connection:
+                    LOGGER.error(f"Worker {worker_id}: failed to reconnect Redis. Waiting 5s.")
+                    STOP_EVENT.wait(5)
+                else:
+                    LOGGER.info(f"Worker {worker_id}: Reconnected to Redis successfully.")
+
+            except Exception as e:
+                LOGGER.error(f"Worker {worker_id}: Loop Error {e}", exc_info=True)
+
+
+        if redis_connection:
+            try:
+                redis_connection.close()
+                LOGGER.info(f"Worker {worker_id}: closed connection to Redis.")
+            except Exception as e:
+                LOGGER.error(f"Worker {worker_id}: error closing connection to Redis: {e}")
+
+        LOGGER.info(f"Worker {worker_id} stopped.")
+
+    @classmethod
+    def process_message(cls, worker_id, topic, payload, redis_connection):
+        try:
+            data = json.loads(payload)
+            LOGGER.debug(f"Worker {worker_id} received: Topic={topic}, Data={data}")
+
+            # Sử dụng hằng số từ config để kiểm tra topic
+            if topic.startswith(DNSEConfigs.TOPIC_STOCK_INFO):
+                symbol = data.get("symbol")
+                if symbol:
+                    redis_key = f"{DNSEConfigs.KEY_STOCK_INFO}:{symbol}"
+                    redis_connection.hset(redis_key, mapping=data)
+
+            elif topic.startswith(DNSEConfigs.TOPIC_SESSION):
+                floor_code = topic.split("/")[-1]
+                redis_key = f"{DNSEConfigs.KEY_SESSION}:{floor_code}"
+                redis_connection.hset(redis_key, mapping=data)
+
+            elif topic.startswith(DNSEConfigs.TOPIC_OHLC_1M):
+                symbol = data.get("symbol")
+                if symbol:
+                    redis_key = f"{DNSEConfigs.KEY_OHLC}:{symbol}"
+                    redis_connection.hset(redis_key, mapping=data)
+
+            elif topic.startswith(DNSEConfigs.TOPIC_TICK):
+                symbol = data.get("symbol")
+                if symbol:
+                    redis_key = f"{DNSEConfigs.KEY_TICK}:{symbol}"
+                    redis_connection.hset(redis_key, mapping=data)
+
+            else:
+                LOGGER.warning(f"Worker {worker_id}: Error handling topic {topic}")
+
+        except json.JSONDecodeError:
+            LOGGER.error(f"Worker {worker_id}: Error parse JSON from topic {topic}: {payload[:100]}...")
+        except redis.RedisError as e:
+            LOGGER.error(f"Worker {worker_id}: Error Redis handling topic {topic}: {e}")
+        except Exception as e:
+            LOGGER.error(f"Worker {worker_id}: Error unexpected {topic}: {e}", exc_info=True)

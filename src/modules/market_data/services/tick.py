@@ -3,7 +3,7 @@ import asyncio
 import datetime
 from typing import Dict, Any
 
-from src.redis import TickCache, OrdersCache
+from src.cache import TickCache, OrdersCache
 from src.common.consts import SQLServerConsts
 from src.modules.market_data.entities import Tick
 from src.modules.market_data.repositories import TickRepo

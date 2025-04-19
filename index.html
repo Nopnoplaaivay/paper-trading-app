@@ -23,17 +23,17 @@
             messageContainer.appendChild(messageElement);
         }
 
-        // Event handler for when the connection is established
+        // Event connector for when the connection is established
         socket.addEventListener('open', (event) => {
             showMessage('Connected to server.');
         });
 
-        // Event handler for receiving messages from the server
+        // Event connector for receiving messages from the server
         socket.onmessage = (event) => {
             showMessage("You sent : " + event.data)
         }
 
-        // Event handler for when the connection is closed
+        // Event connector for when the connection is closed
         socket.addEventListener('close', (event) => {
             showMessage('Connection closed.');
         });

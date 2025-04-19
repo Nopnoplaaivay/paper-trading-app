@@ -1,4 +1,4 @@
-from src.redis import OHLCCache, StockCache
+from src.cache import OHLCCache, StockCache
 
 
 from src.utils.logger import LOGGER

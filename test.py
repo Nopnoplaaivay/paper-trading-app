@@ -8,18 +8,21 @@ import logging
 import os
 import signal # Để xử lý dừng chương trình
 
+from src.modules.market_data.configs import Topics
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(threadName)s - %(levelname)s - %(message)s')
 
 # --- Cấu hình ---
 MQTT_BROKER = "your_mqtt_broker_address"
 MQTT_PORT = 1883
 MQTT_TOPICS = [
-    ("stock/price/+", 0),   # Dấu + là wildcard cho 1 level
-    ("stock/index/+", 0),
-    ("stock/match/+", 0),
-    ("stock/session", 0)
+    (Topics.STOCK_INFO, 0),   # Dấu + là wildcard cho 1 level
+    (Topics.TICK, 0),
+    (Topics.OHLC_1M, 0),
+    (Topics.SESSION, 0)
 ]
-REDIS_HOST = "localhost"
+
+REDIS_HOST = "192.168.1.21"
 REDIS_PORT = 6379
 REDIS_DB = 0
 NUM_REDIS_WORKERS = 3 # Số lượng thread xử lý ghi vào Redis
