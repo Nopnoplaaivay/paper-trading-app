@@ -1,0 +1,7 @@
+class OrdersConfigs:
+    NUM_REDIS_WORKERS = 2
+
+    KEY_LOCK_BUY = "LOCK_BUY"
+    KEY_LOCK_SELL = "LOCK_SELL"
+
+    KEY_PENDING_ORDERS = "PENDING_ORDERS"

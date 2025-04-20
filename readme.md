@@ -1,1 +1,1 @@
-python server.py -a src.app:app -p 8000 -w 2
+python api_server.py -a src.app:app -p 8000 -w 2

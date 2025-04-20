@@ -10,7 +10,8 @@ class SQLServerConsts:
     MARKET_DATA_SCHEMA = "Market_data"
 
     TRADING_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-
+    GMT_7_NOW = f"SWITCHOFFSET(SYSUTCDATETIME(), '+07:00')"
+    GMT_7_NOW_VARCHAR = f"FORMAT(SWITCHOFFSET(SYSUTCDATETIME(), '+07:00'), 'yyyy-MM-dd HH:mm:ss')"
 
 class CommonConsts:
     ROOT_FOLDER = os.path.abspath(os.path.join(os.path.abspath(__file__), 3 * "../"))

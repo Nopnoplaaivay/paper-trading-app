@@ -1,9 +1,8 @@
-from src.cache.connector import REDIS_POOL
-from src.modules.dnse.realtime import DNSERealtimeCacher
+from src.modules.dnse.realtime_cache.realtime import DNSERealtimeCacher
 
 if __name__ == "__main__":
-    # redis_connection = REDIS_POOL.get_connection()
-    # redis_connection.set("test_key", "test_value")
+    # redis_conn = REDIS_POOL.get_conn()
+    # redis_conn.set("test_key", "test_value")
 
     dnse_cacher = DNSERealtimeCacher()
     dnse_cacher.run()

@@ -36,7 +36,7 @@ stop_event = threading.Event() # Dùng để báo hiệu dừng cho các worker
 redis_pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
 
 # --- Hàm xử lý của Worker ---
-def redis_worker(worker_id, redis_connection):
+def redis_worker(worker_id, redis_conn):
     """Thread xử lý tin nhắn từ queue và ghi vào Redis"""
     logging.info(f"Worker {worker_id} bắt đầu.")
     while not stop_event.is_set():
@@ -57,28 +57,28 @@ def redis_worker(worker_id, redis_connection):
                     # Ví dụ: Lưu giá vào Hash, key là 'price:<symbol>'
                     redis_key = f"price:{symbol}"
                     # Dùng HMSET hoặc HSET (nếu data là dict)
-                    redis_connection.hset(redis_key, mapping=data)
+                    redis_conn.hset(redis_key, mapping=data)
                     logging.info(f"Worker {worker_id}: Updated price for {symbol}")
 
                 elif topic.startswith("stock/index/"):
                     index_name = topic_parts[-1]
                     redis_key = f"index:{index_name}"
                     # Giả sử data chứa các trường 'value', 'change', 'pct_change'
-                    redis_connection.hset(redis_key, mapping=data)
+                    redis_conn.hset(redis_key, mapping=data)
                     logging.info(f"Worker {worker_id}: Updated index {index_name}")
 
                 elif topic.startswith("stock/match/"):
                     symbol = topic_parts[-1]
                     redis_key = f"match:{symbol}"
                     # Ví dụ: Lưu các lệnh khớp vào List (dùng LPUSH, giới hạn độ dài bằng LTRIM)
-                    redis_connection.lpush(redis_key, json.dumps(data)) # Lưu lại dạng JSON string
-                    redis_connection.ltrim(redis_key, 0, 999) # Giữ lại 1000 lệnh khớp mới nhất
+                    redis_conn.lpush(redis_key, json.dumps(data)) # Lưu lại dạng JSON string
+                    redis_conn.ltrim(redis_key, 0, 999) # Giữ lại 1000 lệnh khớp mới nhất
                     logging.info(f"Worker {worker_id}: Added match for {symbol}")
 
                 elif topic == "stock/session":
                     redis_key = "stock:session"
                     # Ví dụ: Lưu trạng thái phiên (OPEN, CLOSE, ATO...) vào String
-                    redis_connection.set(redis_key, data.get("status", "UNKNOWN"))
+                    redis_conn.set(redis_key, data.get("status", "UNKNOWN"))
                     logging.info(f"Worker {worker_id}: Updated session status")
 
                 else:

@@ -1,3 +1,3 @@
 from fastapi import APIRouter
 
-accounts_router = APIRouter()
+investors_router = APIRouter()

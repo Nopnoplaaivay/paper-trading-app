@@ -12,8 +12,8 @@ from src.modules.market_data.configs import Topics
 from src.modules.orders.entities import Orders, OrderStatus, OrderSide
 from src.modules.orders.repositories import OrdersRepo
 from src.modules.orders.services import OrdersService
-from src.modules.accounts.entities import Accounts, Securities
-from src.modules.accounts.repositories import AccountsRepo, SecuritiesRepo
+from src.modules.investors.entities import Accounts, Securities
+from src.modules.investors.repositories import AccountsRepo, SecuritiesRepo
 from src.utils.time_utils import TimeUtils
 from src.utils.logger import LOGGER
 

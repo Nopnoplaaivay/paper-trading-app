@@ -1,14 +1,7 @@
-use KVSecurities
-
-
-DROP TABLE [Investors].[accounts];
-DROP TABLE [Auth].[users];
-DROP TABLE [Investors].[securities];
 DROP TABLE [Investors].[transactions];
-DROP TABLE [Auth].[sessions];
-DROP TABLE [Market_data].[stock_info];
-DROP TABLE [Market_data].[tick];
--- DROP SCHEMA [Orders];
--- DROP SCHEMA [Market_data];
--- DROP SCHEMA [Investors];
--- DROP SCHEMA [Auth];
+DROP TABLE [Investors].[holdings];
+DROP TABLE [Orders].[match_orders];
+DROP TABLE [Orders].[orders];
+DROP TABLE [Investors].[accounts];
+DROP TABLE [Auth].[sessions]
+DROP TABLE [Auth].[users]

@@ -12,7 +12,7 @@ CREATE TABLE [Auth].[users] (
 GO
 
 CREATE TABLE [Auth].[sessions] (
-    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
+    [id] VARCHAR(36) PRIMARY KEY DEFAULT (LOWER(NEWID())),
     [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [signature] VARCHAR(255) NOT NULL, 
@@ -25,18 +25,10 @@ CREATE TABLE [Auth].[sessions] (
 GO
 
 CREATE TABLE [Investors].[accounts] (
-    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
-    [total_cash] Integer DEFAULT 0,
+    [id] VARCHAR(36) PRIMARY KEY DEFAULT (LOWER(NEWID())),
     [available_cash] Integer DEFAULT 0,
-    [withdrawable_cash] Integer DEFAULT 0,
-    [stock_value] Integer DEFAULT 0,
-    [total_debt] Integer DEFAULT 0,
-    [net_asset_value] Integer DEFAULT 0,
     [securing_amount] Integer DEFAULT 0,
-    [receiving_amount] Integer DEFAULT 0,
     [purchasing_power] Integer DEFAULT 0,
-    [trading_token] VARCHAR(MAX) DEFAULT '',
-    [trading_token_exp] DATETIME,
     [user_id] INT NOT NULL,
     [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
@@ -46,10 +38,10 @@ CREATE TABLE [Investors].[accounts] (
 GO
 
 CREATE TABLE [Investors].[transactions] (
-    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
+    [id] VARCHAR(36) PRIMARY KEY DEFAULT (LOWER(NEWID())),
     [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
-    [account_id] UNIQUEIDENTIFIER NOT NULL,
+    [account_id] VARCHAR(36) NOT NULL,
     [transaction_type] VARCHAR(10),
     [amount] Integer DEFAULT 0,
     [payment_method] VARCHAR(10),
@@ -57,37 +49,51 @@ CREATE TABLE [Investors].[transactions] (
 );
 
 
-
-CREATE TABLE [Investors].[securities] (
-    [id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+CREATE TABLE [Investors].[holdings] (
+    [id] VARCHAR(36) PRIMARY KEY DEFAULT (LOWER(NEWID())),
     [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
-    [account_id] UNIQUEIDENTIFIER NOT NULL,
+    [account_id] VARCHAR(36) NOT NULL,
     [symbol] VARCHAR(10) NOT NULL,
     [price] INT NOT NULL DEFAULT 0,
     [quantity] INT NOT NULL DEFAULT 0,
-    [avg_price] INT NOT NULL DEFAULT 0,
-    [total_cost] INT NOT NULL DEFAULT 0,
-    [total_value] INT NOT NULL DEFAULT 0,
-    [realized_profit] INT DEFAULT 0,
+    [locked_quantity] INT NOT NULL DEFAULT 0,
+    [cost_basis_per_share] INT NOT NULL DEFAULT 0,
     CONSTRAINT uq_account_symbol UNIQUE (account_id, symbol),
     CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES [Investors].accounts(id)
 );
 
 
 CREATE TABLE [Orders].[orders] (
-    [id] UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID() NOT NULL,
+    [id] VARCHAR(36) PRIMARY KEY DEFAULT (LOWER(NEWID())),
     [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
-    [account_id] UNIQUEIDENTIFIER NOT NULL,
+    [account_id] VARCHAR(36) NOT NULL,
     [side] VARCHAR(10) NOT NULL,
     [symbol] VARCHAR(10) NOT NULL,
     [price] Integer DEFAULT 0 NOT NULL,
-    [qtty] Integer DEFAULT 0 NOT NULL,
+    [quantity] Integer DEFAULT 0 NOT NULL,
     [order_type] VARCHAR(10) NOT NULL,
     [status] VARCHAR(10) DEFAULT 'PENDING' NOT NULL,
     [error] VARCHAR(255) DEFAULT NULL,
     CONSTRAINT FK_account_orders FOREIGN KEY (account_id) REFERENCES [Investors].[accounts](id)
+);
+
+GO
+
+CREATE TABLE [Orders].[match_orders] (
+    [id] VARCHAR(36) PRIMARY KEY DEFAULT (LOWER(NEWID())),
+    [__created_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
+    [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
+    [account_id] VARCHAR(36) NOT NULL,
+    [order_id] VARCHAR(36) NOT NULL,
+    [side] VARCHAR(10) NOT NULL,
+    [symbol] VARCHAR(10) NOT NULL,
+    [price] Integer DEFAULT 0 NOT NULL,
+    [quantity] Integer DEFAULT 0 NOT NULL,
+    [total_amount] Integer DEFAULT 0 NOT NULL,
+    [order_type] VARCHAR(10) NOT NULL,
+    CONSTRAINT FK_account_match_orders FOREIGN KEY (account_id) REFERENCES [Investors].[accounts](id)
 );
 
 GO

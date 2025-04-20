@@ -1,5 +1,5 @@
 class DNSEConfigs:
-    NUM_REDIS_WORKERS = 4
+    NUM_REDIS_WORKERS = 2
 
     KEY_STOCK_INFO = "SI"
     KEY_OHLC = "OHLC"

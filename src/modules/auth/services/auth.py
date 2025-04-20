@@ -6,14 +6,15 @@ from cachetools import TTLCache
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
-from src.common.consts import MessageConsts, CommonConsts
+from src.common.consts import MessageConsts, CommonConsts, SQLServerConsts
+from src.modules.base.query_builder import TextSQL
 from src.common.responses.exceptions.base_exceptions import BaseExceptionResponse
 from src.modules.auth.dtos import RegisterDTO, LoginDTO, LogoutDTO, RefreshDTO
 from src.modules.auth.types import JwtPayload, RefreshPayload
 from src.modules.users.entities import Users, Sessions
 from src.modules.users.repositories import UsersRepo, SessionsRepo
-from src.modules.accounts.entities import Accounts
-from src.modules.accounts.repositories import AccountsRepo
+from src.modules.investors.entities import Accounts
+from src.modules.investors.repositories import AccountsRepo
 from src.utils.jwt_utils import JWTUtils
 from src.utils.time_utils import TimeUtils
 from src.utils.logger import LOGGER
@@ -162,11 +163,11 @@ class AuthService:
         await SessionsRepo.update(
             record={
                 Sessions.id.name: payload.sessionId,
-                Sessions.updated_at.name: TimeUtils.get_current_vn_time(),
                 Sessions.signature.name: new_signature,
             },
             identity_columns=[Sessions.id.name],
             returning=False,
+            text_clauses={"__updated_at__": TextSQL(SQLServerConsts.GMT_7_NOW_VARCHAR)},
         )
 
         access_token_payload = JwtPayload(
@@ -200,7 +201,6 @@ class AuthService:
             blacklist_key = f"SESSION_BLACKLIST:{user_id}:{session_id}"
             if blacklist_key in black_list:
                 sessions = await SessionsRepo.delete({Sessions.user_id.name: user_id})
-                
                 raise BaseExceptionResponse(
                     http_code=401,
                     status_code=401,

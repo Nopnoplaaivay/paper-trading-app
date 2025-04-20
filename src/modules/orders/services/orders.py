@@ -1,14 +1,17 @@
 from uuid import uuid4
 
-from src.cache import OrdersCache, TickCache
-from src.common.consts import SQLServerConsts
+from src.cache.connector import REDIS_POOL
+from src.cache.config import OrdersConfigs
 from src.common.responses.exceptions import BaseExceptionResponse
-from src.modules.accounts.entities import Accounts, Securities
-from src.modules.accounts.repositories import AccountsRepo, SecuritiesRepo
-from src.modules.orders.entities import Orders, OrderStatus, OrderSide
+from src.modules.dnse.realtime_data_provider import RealtimeDataProvider
+from src.modules.investors.entities import Accounts, Holdings
+from src.modules.investors.repositories import AccountsRepo, HoldingsRepo
+from src.modules.orders.entities import Orders
 from src.modules.orders.repositories import OrdersRepo
+from src.modules.orders.processors import OrdersProcessors
 from src.modules.orders.dtos import (
-    OrdersDTO, 
+    OrdersDTO,
+    OrdersCancelDTO,
     PowerDTO, 
     PowerResponseDTO, 
     OrdersResponseDTO
@@ -23,65 +26,9 @@ class OrdersService:
 
     @classmethod
     async def place_order(cls, payload: OrdersDTO, user: JwtPayload):
-        """Validate account"""
-        account = await cls.validate_order(payload=payload, user=user)
-        """
-        Check matching order
-        If match, insert order to database and update account balance
-        If not, insert order to cache and wait for matching
-        """
-        record = {
-            Orders.id.name: str(uuid4()).upper(),
-            Orders.account_id.name: payload.account_id,
-            Orders.side.name: payload.side,
-            Orders.symbol.name: payload.symbol,
-            Orders.price.name: payload.price,
-            Orders.order_type.name: payload.order_type,
-            Orders.qtty.name: payload.qtty,
-            Orders.error.name: "",
-        }
-        if payload.side == OrderSide.BUY.value:
-            match_price = await TickCache.get_match_price(symbol=payload.symbol)
-            if payload.price == match_price:
-                record[Orders.status.name] = OrderStatus.COMPLETED.value
-                record = await cls.repo.insert(record=record, returning=True)
-            else:
-                record[Orders.status.name] = OrderStatus.PENDING.value
-                record["created_at"] = TimeUtils.get_current_vn_time().strftime(
-                    SQLServerConsts.TRADING_TIME_FORMAT
-                )
-                await OrdersCache.add(order=record)
-        elif payload.side == OrderSide.SELL.value:
-            match_price = await TickCache.get_match_price(symbol=payload.symbol)
-            if payload.price == match_price:
-                record[Orders.status.name] = OrderStatus.COMPLETED.value
-                record = await cls.repo.insert(record=record, returning=True)
-            else:
-                record[Orders.status.name] = OrderStatus.PENDING.value
-                record["created_at"] = TimeUtils.get_current_vn_time().strftime(
-                    SQLServerConsts.TRADING_TIME_FORMAT
-                )
-                await OrdersCache.add(order=record)
-
-        return OrdersResponseDTO(
-            id=record[Orders.id.name],
-            side=record[Orders.side.name],
-            symbol=record[Orders.symbol.name],
-            price=record[Orders.price.name],
-            qtty=record[Orders.qtty.name],
-            order_type=record[Orders.order_type.name],
-            status=record[Orders.status.name]
-        ).model_dump()
-
-        """Update account balance"""
-
-
-    @classmethod
-    async def validate_order(cls, payload: OrdersDTO, user: JwtPayload):
-        conditions = {Accounts.id.name: payload.account_id}
-        records = await AccountsRepo.get_by_condition(conditions)
-        if records:
-            account = records[0]
+        try:
+            """Check user permission"""
+            account = (await AccountsRepo.get_by_condition(conditions={Accounts.id.name: payload.account_id}))[0]
             if account[Accounts.user_id.name] != user.userId:
                 raise BaseExceptionResponse(
                     http_code=403,
@@ -89,50 +36,164 @@ class OrdersService:
                     message=MessageConsts.FORBIDDEN,
                     errors="You do not have permission to this account",
                 )
-            if account[Accounts.purchasing_power.name] < payload.price * payload.qtty:
+
+            """Check input"""
+            if payload.side not in ["SIDE_BUY", "SIDE_SELL"]:
                 raise BaseExceptionResponse(
                     http_code=400,
                     status_code=400,
                     message=MessageConsts.INVALID_INPUT,
-                    errors="Not enough purchasing power",
+                    errors="INVALID_ORDER_SIDE",
+                )
+            if payload.order_type not in ["LO", "MP"]:
+                raise BaseExceptionResponse(
+                    http_code=400,
+                    status_code=400,
+                    message=MessageConsts.INVALID_INPUT,
+                    errors="INVALID_ORDER_TYPE",
+                )
+
+            """Check price/quantity input"""
+            if payload.order_type == "LO" and payload.price <= 0:
+                raise BaseExceptionResponse(
+                    http_code=400,
+                    status_code=400,
+                    message=MessageConsts.INVALID_INPUT,
+                    errors="INVALID_PRICE_LOT",
                 )
             if payload.qtty <= 0:
                 raise BaseExceptionResponse(
                     http_code=400,
                     status_code=400,
                     message=MessageConsts.INVALID_INPUT,
-                    errors="Order quantity must be greater than 0",
-                )
-            if payload.price <= 0:
-                raise BaseExceptionResponse(
-                    http_code=400,
-                    status_code=400,
-                    message=MessageConsts.INVALID_INPUT,
-                    errors="Price must be greater than 0",
+                    errors="INVALID_QUANTITY_LOT",
                 )
 
-            """Check security in portfolio"""
-            securities = await SecuritiesRepo.get_by_condition(
-                {
-                    Securities.account_id.name: payload.account_id,
-                    Securities.symbol.name: payload.symbol,
+            if payload.order_type == "MP":
+                current_price = RealtimeDataProvider.get_market_price(payload.symbol)
+                if current_price is None:
+                    raise BaseExceptionResponse(
+                        http_code=404,
+                        status_code=404,
+                        message=MessageConsts.NOT_FOUND,
+                        errors="MARKET_PRICE_NOT_FOUND",
+                    )
+                payload.price = current_price
+
+            """Check purchasing power"""
+            if payload.side == "SIDE_BUY":
+                if payload.price * payload.qtty > account[Accounts.purchasing_power.name]:
+                    raise BaseExceptionResponse(
+                        http_code=400,
+                        status_code=400,
+                        message=MessageConsts.INVALID_INPUT,
+                        errors="QUANTITY_EXCEEDS_PURCHASING_POWER",
+                    )
+            if payload.side == "SIDE_SELL":
+                """Check security in portfolio"""
+                conditions = {
+                    Holdings.account_id.name: payload.account_id,
+                    Holdings.symbol.name: payload.symbol,
                 }
-            )
-            if payload.side == "SIDE_SELL" and not securities:
-                raise BaseExceptionResponse(
-                    http_code=404,
-                    status_code=404,
-                    message=MessageConsts.NOT_FOUND,
-                    errors="Account does not have this security",
-                )
-        else:
+                holdings = await HoldingsRepo.get_by_condition(conditions=conditions)
+                if not holdings:
+                    raise BaseExceptionResponse(
+                        http_code=404,
+                        status_code=404,
+                        message=MessageConsts.NOT_FOUND,
+                        errors="SECURITY_NOT_FOUND_IN_PORTFOLIO",
+                    )
+                else:
+                    holding = holdings[0]
+                    if holding[Holdings.quantity.name] - holding[Holdings.locked_quantity.name] < payload.qtty:
+                        raise BaseExceptionResponse(
+                            http_code=400,
+                            status_code=400,
+                            message=MessageConsts.INVALID_INPUT,
+                            errors="QUANTITY_EXCEEDS_HOLDING",
+                        )
+
+        except Exception:
             raise BaseExceptionResponse(
                 http_code=404,
                 status_code=404,
                 message=MessageConsts.NOT_FOUND,
                 errors="Account not found",
             )
-        return account
+
+        """
+        Check matching_engine order
+        If match, insert order to database and update account balance
+        If not, insert order to cache and wait for matching_engine
+        """
+        order = {
+            Orders.id.name: str(uuid4()),
+            Orders.account_id.name: payload.account_id,
+            Orders.side.name: payload.side,
+            Orders.symbol.name: payload.symbol,
+            Orders.price.name: payload.price,
+            Orders.order_type.name: payload.order_type,
+            Orders.quantity.name: payload.qtty,
+            Orders.error.name: "",
+        }
+
+        """Update order on pending"""
+        await OrdersProcessors.update_on_pending(order=order)
+
+        return OrdersResponseDTO(
+            id=order[Orders.id.name],
+            side=order[Orders.side.name],
+            symbol=order[Orders.symbol.name],
+            price=order[Orders.price.name],
+            qtty=order[Orders.quantity.name],
+            order_type=order[Orders.order_type.name],
+        ).model_dump()
+
+    @classmethod
+    async def cancel_order(cls, payload: OrdersCancelDTO, user: JwtPayload):
+        """Check user permission"""
+        try:
+            account = (await AccountsRepo.get_by_condition(conditions={Accounts.id.name: payload.account_id}))[0]
+            if account[Accounts.user_id.name] != user.userId:
+                raise BaseExceptionResponse(
+                    http_code=403,
+                    status_code=403,
+                    message=MessageConsts.FORBIDDEN,
+                    errors="You do not have permission to this account",
+                )
+        except Exception:
+            raise BaseExceptionResponse(
+                http_code=404,
+                status_code=404,
+                message=MessageConsts.NOT_FOUND,
+                errors="Account not found",
+            )
+
+        """Cancel order"""
+        try:
+            conditions = {
+                Orders.id.name: payload.order_id,
+                Orders.account_id.name: payload.account_id,
+            }
+            order = (await cls.repo.get_by_condition(conditions=conditions))[0]
+            if order[Orders.status.name] == "PENDING":
+                await OrdersProcessors.update_on_cancel(order=order)
+            else:
+                raise BaseExceptionResponse(
+                    http_code=400,
+                    status_code=400,
+                    message=MessageConsts.INVALID_INPUT,
+                    errors="Order is not pending",
+                )
+        except Exception:
+            raise BaseExceptionResponse(
+                http_code=404,
+                status_code=404,
+                message=MessageConsts.NOT_FOUND,
+                errors="Order not found",
+            )
+        return True
+
 
     @classmethod
     async def get_power(cls, payload: PowerDTO):

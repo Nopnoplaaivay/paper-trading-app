@@ -1,7 +1,7 @@
 from src.common.responses.exceptions import BaseExceptionResponse
-from src.modules.accounts.entities import Accounts, Transactions
-from src.modules.accounts.repositories import AccountsRepo, TransactionsRepo
-from src.modules.accounts.dtos import DepositDTO, WithdrawDTO
+from src.modules.investors.entities import Accounts, Transactions
+from src.modules.investors.repositories import AccountsRepo, TransactionsRepo
+from src.modules.investors.dtos import DepositDTO, WithdrawDTO
 from src.modules.auth.types import JwtPayload
 from src.common.consts import MessageConsts
 from src.utils.time_utils import TimeUtils
@@ -16,8 +16,6 @@ class AccountsService:
         records = await cls.repo.get_by_condition(conditions)
 
         # calculate balance
-        
-
 
         if records:
             return records[0]
@@ -45,18 +43,12 @@ class AccountsService:
                     message=MessageConsts.FORBIDDEN,
                     errors="You do not have permission to this account",
                 )
-            total_cash = record[Accounts.total_cash.name] + amount
             available_cash = record[Accounts.available_cash.name] + amount
-            withdrawable_cash = record[Accounts.withdrawable_cash.name] + amount
-            net_asset_value = record[Accounts.net_asset_value.name] + amount
             purchasing_power = record[Accounts.purchasing_power.name] + amount
             updated_account = await cls.repo.update(
                 record={
                     Accounts.id.name: record[Accounts.id.name],
-                    Accounts.total_cash.name: total_cash,
                     Accounts.available_cash.name: available_cash,
-                    Accounts.withdrawable_cash.name: withdrawable_cash,
-                    Accounts.net_asset_value.name: net_asset_value,
                     Accounts.purchasing_power.name: purchasing_power,
                 },
                 identity_columns=[Accounts.id.name],
@@ -105,18 +97,12 @@ class AccountsService:
                     errors="Exceed withdrawable cash",
                 )
 
-            total_cash = record[Accounts.total_cash.name] - amount
             available_cash = record[Accounts.available_cash.name] - amount
-            withdrawable_cash = record[Accounts.withdrawable_cash.name] - amount
-            net_asset_value = record[Accounts.net_asset_value.name] - amount
             purchasing_power = record[Accounts.purchasing_power.name] - amount
             updated_account = await cls.repo.update(
                 record={
                     Accounts.id.name: record[Accounts.id.name],
-                    Accounts.total_cash.name: total_cash,
                     Accounts.available_cash.name: available_cash,
-                    Accounts.withdrawable_cash.name: withdrawable_cash,
-                    Accounts.net_asset_value.name: net_asset_value,
                     Accounts.purchasing_power.name: purchasing_power,
                 },
                 identity_columns=[Accounts.id.name],
