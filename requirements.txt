@@ -13,4 +13,7 @@ paho-mqtt==1.6.1
 cachetools==5.5.2
 requests==2.32.3
 redis==5.2.1
-websockets
+websockets==15.0.1
+requests==2.32.3
+streamlit==1.44.1
+plotly==6.0.1
