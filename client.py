@@ -1,7 +1,7 @@
 import time
 import streamlit as st
 
-from src.web.auth import WebAPIs, AuthService
+from src.web.auth import AuthService
 # from src.auth import login_user, register_user, initialize_auth_state, logout_user
 from src.utils.logger import LOGGER
 
@@ -59,17 +59,11 @@ with register_tab:
                 st.error("Please fill in all fields.", icon="⚠️")
             else:
                 # Call the registration API
-                if reg_role == "broker" and not type_broker:
-                    st.error("Please select broker type", icon="⚠️")
-                elif reg_role == "client" and not type_client:
-                    st.error("Please select client type", icon="⚠️")
+                if AuthService.register(reg_username, reg_password, reg_confirm_password, reg_role, type_broker, type_client):
+                    st.success("Registration successful! Please log in.")
+                    time.sleep(1)
                 else:
-                    # Call the registration API with broker/client types
-                    if WebAPIs.register(reg_username, reg_password, reg_confirm_password, reg_role, type_broker, type_client):
-                        st.success("Registration successful! Please log in.")
-                        time.sleep(1)
-                    else:
-                        st.error(st.session_state.get("login_error", "Registration Failed"), icon="🚨")
+                    st.error(st.session_state.get("login_error", "Registration Failed"), icon="🚨")
 
 # Add footer or other info if needed
 st.caption("Trading App Demo v0.1")

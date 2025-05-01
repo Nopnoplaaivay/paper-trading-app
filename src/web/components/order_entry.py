@@ -5,7 +5,7 @@ import streamlit as st
 
 def display_order_entry():
     st.subheader("Đặt Lệnh")
-    acc = st.session_state.account
+    account_balance = st.session_state.account_balance
     stock = st.session_state.stock_data
 
     # Lấy mã đang xem làm mặc định
@@ -33,7 +33,7 @@ def display_order_entry():
     current_holding = st.session_state.holdings.get(order_symbol)
     max_sell_qty = current_holding['quantity'] if current_holding else 0
     price_for_calc = limit_price if order_type == "LO" and limit_price else stock['price']
-    max_buy_qty = int(acc['buying_power'] // price_for_calc) if price_for_calc > 0 else 0
+    max_buy_qty = int(account_balance['purchasing_power'] // price_for_calc) if price_for_calc > 0 else 0
 
     col1, col2 = st.columns(2)
     with col1:
@@ -46,11 +46,11 @@ def display_order_entry():
             st.session_state.orders.append({"id": f"B-{random.randint(1000,9999)}", **order_details, "status": "PENDING"}) # Thêm vào list lệnh giả lập
             # Giảm tiền mặt giả lập (ví dụ)
             cost = (limit_price if limit_price else stock['price']) * quantity
-            if acc['cash'] >= cost:
+            if account_balance['available_cash'] >= cost:
                  # Giả lập khóa tiền cho lệnh LO/MP
-                 st.session_state.account['cash'] -= cost
+                 st.session_state.account['available_cash'] -= cost
                  st.session_state.account['securing_amount'] += cost # Tăng tiền khóa
-                 st.session_state.account['buying_power'] -= cost
+                 st.session_state.account['purchasing_power'] -= cost
                  # Simulate fill for MP right away for demo
                  if order_type == "MP":
                      # This should happen in a separate execution logic

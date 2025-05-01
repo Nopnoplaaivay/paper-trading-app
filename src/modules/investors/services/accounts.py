@@ -1,10 +1,10 @@
+from src.modules.dnse.realtime_data_provider import RealtimeDataProvider
 from src.common.responses.exceptions import BaseExceptionResponse
-from src.modules.investors.entities import Accounts, Transactions
-from src.modules.investors.repositories import AccountsRepo, TransactionsRepo
+from src.modules.investors.entities import Accounts, Transactions, Holdings
+from src.modules.investors.repositories import AccountsRepo, TransactionsRepo, HoldingsRepo
 from src.modules.investors.dtos import DepositDTO, WithdrawDTO
 from src.modules.auth.types import JwtPayload
 from src.common.consts import MessageConsts
-from src.utils.time_utils import TimeUtils
 
 
 class AccountsService:
@@ -13,14 +13,31 @@ class AccountsService:
     @classmethod
     async def get_balance(cls, payload: JwtPayload):
         conditions = {Accounts.user_id.name: payload.userId}
-        records = await cls.repo.get_by_condition(conditions)
-
-        # calculate balance
-
+        records = await cls.repo.get_by_condition(conditions=conditions)
+        balance = {
+            "nav": 0,
+            "available_cash": 0,
+            "stock_value": 0,
+            "purchasing_power": 0,
+            "securing_amount": 0,
+        }
         if records:
-            return records[0]
-        else:
-            return None
+            record = records[0]
+            balance["available_cash"] = record[Accounts.available_cash.name]
+            balance["securing_amount"] = record[Accounts.securing_amount.name]
+            balance["purchasing_power"] = record[Accounts.purchasing_power.name]
+
+            holdings = await HoldingsRepo.get_by_condition(
+                {Holdings.account_id.name: record[Accounts.id.name]},
+            )
+            if holdings:
+                for holding in holdings:
+                    current_price = RealtimeDataProvider.get_market_price(symbol=holding[Holdings.symbol.name])
+                    balance["stock_value"] += current_price * holding[Holdings.quantity.name]
+
+            balance["nav"] = balance["available_cash"] + balance["securing_amount"] + balance["stock_value"]
+
+        return balance
 
     @classmethod
     async def deposit(cls, payload: DepositDTO, user: JwtPayload):

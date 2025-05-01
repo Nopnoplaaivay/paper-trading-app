@@ -13,7 +13,7 @@ class YfinanceCrawler:
 
     @classmethod
     def download(
-        cls, symbol: str  = "BID", interval: str = "1d", time_range: str = "1y"
+        cls, symbol: str = "BID", interval: str = "1d", time_range: str = "1y"
     ) -> pd.DataFrame:
         if time_range not in YfinanceConsts.VALID_RANGES:
             raise ValueError(f"Invalid range value: {time_range}")

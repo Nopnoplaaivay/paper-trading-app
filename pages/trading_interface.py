@@ -2,6 +2,7 @@ import streamlit as st
 import time
 
 from src.web.auth import AuthService
+from src.web.investors import InvestorsService
 from src.modules.yfinance.crawler import YfinanceCrawler
 from src.modules.dnse.realtime_data_provider import RealtimeDataProvider
 from src.utils.logger import LOGGER
@@ -30,11 +31,6 @@ if 'last_fetch_time_trade' not in st.session_state:
 
 
 def fetch_trading_data():
-    # user_id = get_user_id()
-    # if not user_id:
-    #      st.error("User ID not found in session.")
-    #      return False # Cannot fetch
-
     # Fetch market data from Redis
     st.session_state.indices = {
         "VNINDEX": RealtimeDataProvider.get_market_index_info("VNINDEX"),
@@ -52,17 +48,9 @@ def fetch_trading_data():
         time_range="1y"
     )
 
-    st.session_state.account = {
-        "nav": 5001832,
-        "cash": 5001832,
-        "stock_value": 0,
-        "buying_power": 5001832,
-        "securing_amount": 0,
-    }
+    st.session_state.account_balance = InvestorsService.get_balance()
     st.session_state.orders = []
-    st.session_state.holdings = {
-        "FPT": {"quantity": 100, "cost_basis": 90000, "market_price": 95000, "locked_quantity": 0},
-    }
+    st.session_state.holdings = InvestorsService.get_all_holdings()
     st.session_state.selected_order_type = "LO"
 
     # Fetch account specific data via API

@@ -6,8 +6,6 @@ def display_chart():
     st.subheader(f"Biểu đồ {st.session_state.stock_data['symbol']}")
     df = st.session_state.chart_data
     last_close = df['close'].iloc[-1]
-    print(df)
-    print(f"Last close price: {last_close}")
 
     fig = go.Figure(data=[go.Candlestick(
         x=df['time'],
