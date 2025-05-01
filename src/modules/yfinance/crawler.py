@@ -34,10 +34,8 @@ class YfinanceCrawler:
             df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
             df["time"] = df["timestamp"].dt.date
 
-            # df.set_index("timestamp", inplace=True)
-            # df.columns = [
-            #     f"{symbol}_{col}" for col in df.columns if col != "timestamp"
-            # ]
+            # drop nan
+            df = df.dropna()
             return df
         except Exception as e:
             LOGGER.error(f"Failed to fetch data for {symbol}: {e}")
