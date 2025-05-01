@@ -53,15 +53,6 @@ def fetch_trading_data():
     st.session_state.holdings = InvestorsService.get_all_holdings()
     st.session_state.selected_order_type = "LO"
 
-    # Fetch account specific data via API
-    # balance_data = api_get_balance(user_id)
-    # holdings_data = api_get_holdings(user_id)
-    # orders_data = api_get_recent_orders(user_id)
-
-    # if balance_data: st.session_state.account_real = balance_data
-    # if holdings_data: st.session_state.holdings_real = {h['symbol']: h for h in holdings_data}
-    # if orders_data: st.session_state.orders_real = orders_data
-
     st.session_state.last_fetch_time_trade = time.time()
     return True
 
