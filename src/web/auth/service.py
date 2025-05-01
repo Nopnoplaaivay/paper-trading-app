@@ -80,36 +80,6 @@ class AuthService:
             LOGGER.warning(f"Registration failed for user: {account}")
             return False
 
-
-# def register_user(username, password, email) -> bool:
-#     """Attempts to register using the API (or fakes it)."""
-#     LOGGER.info(f"Attempting registration for user: {username}")
-#     st.session_state.login_error = None
-
-#     # --- REPLACE WITH REAL API CALL ---
-#     # response = api_register(username, password, email)
-#     # FAKE REGISTER:
-#     if username not in FAKE_ROLES: # Allow registering new 'client' users
-#          response = {"success": True, "message": "Fake registration successful!"}
-#          FAKE_ROLES[username] = "client" # Add to fake roles for demo login later
-#          LOGGER.info(f"Fake registration successful for {username}")
-#     else:
-#          response = None
-#          LOGGER.warning(f"Fake registration failed for {username} (already exists).")
-#          st.session_state.login_error = "Username already exists (fake check)."
-#     # --- END FAKE REGISTER ---
-
-#     if response and response.get("success"):
-#         LOGGER.info(f"User {username} registered successfully.")
-#         return True
-#     else:
-#         # Error message might already be set by fake logic or should come from API response
-#         if not st.session_state.login_error:
-#              st.session_state.login_error = "Registration failed."
-#         LOGGER.warning(f"Registration failed for user: {username}")
-#         return False
-
-#
 # def logout_user():
 #     """Logs the user out by clearing session state."""
 #     LOGGER.info(f"Logging out user: {st.session_state.get('username')}")
@@ -124,24 +94,24 @@ class AuthService:
 #     st.rerun()
 #
 #
-# def require_login(role: Optional[str] = None):
-#     """Decorator or function to protect pages/parts of pages."""
-#     initialize_auth_state() # Ensure state exists
-#     if not st.session_state.logged_in:
-#         st.warning("Please log in to access this page.", icon="🔒")
-#         st.stop() # Stop execution of the current script (page)
-#
-#     if role: # Check specific role if required
-#         user_role = st.session_state.get("user_role")
-#         # Allow 'admin' to access 'broker' pages too, for example
-#         allowed = False
-#         if role == "broker" and user_role in ["broker", "admin"]:
-#             allowed = True
-#         elif role == "admin" and user_role == "admin":
-#             allowed = True
-#         elif role == "client" and user_role in ["client", "broker", "admin"]: # Everyone can access client page if logged in
-#              allowed = True # Or adjust based on exact needs
-#
-#         if not allowed:
-#              st.error(f"Access Denied: You do not have the required '{role}' permissions.", icon="🚫")
-#              st.stop()
+    @classmethod
+    def require_login(cls, role: Optional[str] = None):
+        """Decorator or function to protect pages/parts of pages."""
+        cls.initialize_auth_state() # Ensure state exists
+        if not st.session_state.logged_in:
+            st.warning("Please log in to access this page.", icon="🔒")
+            st.stop()
+
+        if role:
+            user_role = st.session_state.get("user_role")
+            allowed = False
+            if role == "broker" and user_role in ["broker", "admin"]:
+                allowed = True
+            elif role == "admin" and user_role == "admin":
+                allowed = True
+            elif role == "client" and user_role in ["client", "broker", "admin"]:
+                allowed = True
+
+            if not allowed:
+                 st.error(f"Access Denied: You do not have the required '{role}' permissions.", icon="🚫")
+                 st.stop()

@@ -21,7 +21,8 @@ MQTT_TOPICS = [
     (DNSEConfigs.TOPIC_STOCK_INFO + "/+", 0),
     (DNSEConfigs.TOPIC_TICK + "/+", 0),
     (DNSEConfigs.TOPIC_OHLC_1M + "/+", 0),
-    (DNSEConfigs.TOPIC_SESSION + "/+", 0)
+    (DNSEConfigs.TOPIC_SESSION + "/+", 0),
+    (DNSEConfigs.TOPIC_MARKET + "/+", 0),
 ]
 
 class DNSEMqtt:

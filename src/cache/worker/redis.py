@@ -67,24 +67,25 @@ class RedisWorker:
                 if symbol:
                     redis_key = f"{DNSEConfigs.KEY_STOCK_INFO}:{symbol}"
                     redis_conn.hset(redis_key, mapping=data)
-
             elif topic.startswith(DNSEConfigs.TOPIC_SESSION):
                 floor_code = topic.split("/")[-1]
                 redis_key = f"{DNSEConfigs.KEY_SESSION}:{floor_code}"
                 redis_conn.hset(redis_key, mapping=data)
-
             elif topic.startswith(DNSEConfigs.TOPIC_OHLC_1M):
                 symbol = data.get("symbol")
                 if symbol:
                     redis_key = f"{DNSEConfigs.KEY_OHLC}:{symbol}"
                     redis_conn.hset(redis_key, mapping=data)
-
             elif topic.startswith(DNSEConfigs.TOPIC_TICK):
                 symbol = data.get("symbol")
                 if symbol:
                     redis_key = f"{DNSEConfigs.KEY_TICK}:{symbol}"
                     redis_conn.hset(redis_key, mapping=data)
-
+            elif topic.startswith(DNSEConfigs.TOPIC_MARKET):
+                market = data.get("indexName")
+                if market:
+                    redis_key = f"{DNSEConfigs.KEY_MARKET}:{market}"
+                    redis_conn.hset(redis_key, mapping=data)
             else:
                 LOGGER.warning(f"Worker {worker_id}: Error handling topic {topic}")
 

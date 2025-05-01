@@ -46,3 +46,24 @@ class DNSEConsts:
     RECONNECT_RATE = 2
     MAX_RECONNECT_COUNT = 12
     MAX_RECONNECT_DELAY = 60
+
+class YfinanceConsts:
+    VALID_RANGES = [
+        "1d",
+        "5d",
+        "1mo",
+        "3mo",
+        "6mo",
+        "1y",
+        "2y",
+        "5y",
+        "10y",
+        "ytd",
+        "max",
+    ]
+
+    AVAILABLE_RANGES = [
+        "1Y",
+        "5Y",
+        "10Y"
+    ]

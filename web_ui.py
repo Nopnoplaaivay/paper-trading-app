@@ -3,7 +3,7 @@ import streamlit as st
 
 from src.web.auth import WebAPIs, AuthService
 # from src.auth import login_user, register_user, initialize_auth_state, logout_user
-from src.utils import logger
+from src.utils.logger import LOGGER
 
 st.set_page_config(layout="centered", page_title="Login/Register")
 
@@ -30,7 +30,12 @@ with login_tab:
 
         if submitted:
             if AuthService.login(login_username, login_password):
-                st.rerun() # Rerun to update state and show welcome/sidebar
+                if st.session_state.user_role == "admin":
+                    try:
+                        st.switch_page("pages/trading_interface.py")
+                    except Exception as e:
+                        LOGGER.error(f"Switch page failed: {e}")
+                        st.error("Failed to switch page. Please try again.", icon="🚨")
             else:
                 st.error(st.session_state.get("login_error", "Login Failed"), icon="🚨")
 
@@ -42,16 +47,8 @@ with register_tab:
         reg_confirm_password = st.text_input("Confirm Password", type="password", key="reg_confirm")
         reg_role = st.selectbox("Select Role", ["client", "broker"])
 
-        role_specific_box = st.empty()
-        type_user = st.selectbox("Select User Type", ["Silver", "Gold", "VIP"], key="user_type")
-        if reg_role == "broker":
-            type_broker = type_user
-            type_client = ""
-        elif reg_role == "client":
-            type_client = type_user
-            type_broker = ""
-
-        print(type_client)
+        type_broker = ""
+        type_client = ""
 
         reg_submitted = st.form_submit_button("Register")
 
