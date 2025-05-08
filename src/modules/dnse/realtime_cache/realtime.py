@@ -20,13 +20,12 @@ class DNSERealtimeCacher:
 
     def start_redis_workers(self):
         """Khởi tạo và chạy các Redis worker thread."""
-        if not self.worker_threads: # Chỉ khởi tạo nếu danh sách rỗng
+        if not self.worker_threads:
             num_workers = getattr(DNSEConfigs, 'NUM_REDIS_WORKERS', 1)
             LOGGER.info(f"Starting {num_workers} Redis worker threads...")
             for i in range(num_workers):
                 thread_name = f"RedisWorker-{i+1}"
                 worker = threading.Thread(target=RedisWorker.loop, args=(i+1,), name=thread_name)
-                # worker.daemon = False # Mặc định là False, đảm bảo chờ chúng kết thúc
                 worker.start()
                 self.worker_threads.append(worker)
             LOGGER.info(f"Successfully launched {len(self.worker_threads)} Redis worker threads.")
@@ -48,8 +47,8 @@ class DNSERealtimeCacher:
         try:
             if DNSEMqtt.client and DNSEMqtt.client.is_connected():
                 LOGGER.info("Disconnecting MQTT client...")
-                DNSEMqtt.client.disconnect() # Sẽ làm loop_forever() kết thúc
-                DNSEMqtt.client.loop_stop() # Thêm loop_stop nếu cần thiết để dừng hẳn luồng mạng của Paho
+                DNSEMqtt.client.disconnect()
+                DNSEMqtt.client.loop_stop()
             elif DNSEMqtt.client:
                 LOGGER.info("MQTT client was not connected.")
             else:

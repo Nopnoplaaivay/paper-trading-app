@@ -1,11 +1,10 @@
 import streamlit as st
 import time
 
+st.set_page_config(layout="wide", page_title="Trading Interface")
+
 from src.web.auth import AuthService
-from src.web.investors import InvestorsService
-from src.modules.yfinance.crawler import YfinanceCrawler
-from src.modules.dnse.realtime_data_provider import RealtimeDataProvider
-from src.utils.logger import LOGGER
+from src.web.processors import OrderPayloadProcessor
 from src.web.components import (
     display_chart,
     display_index_tickers,
@@ -15,54 +14,16 @@ from src.web.components import (
     display_balance,
     display_holdings,
 )
+from src.utils.logger import LOGGER
+from src.web.fetch_data import DataFetcher
+
+LOGGER.info(f"Session state on entry: logged_in={st.session_state.get('logged_in')}, role={st.session_state.get('user_role')}")
+
 AuthService.require_login(role="client")
-
-REFRESH_INTERVAL_SECONDS = 10
-
-st.set_page_config(layout="wide", page_title="Trading Interface")
+REFRESH_INTERVAL_SECONDS = 3
 
 
-if 'current_symbol' not in st.session_state:
-    st.session_state.current_symbol = "BSI"
-if 'selected_order_type' not in st.session_state:
-     st.session_state.selected_order_type = "LO"
-if 'last_fetch_time_trade' not in st.session_state:
-     st.session_state.last_fetch_time_trade = 0
-
-
-def fetch_trading_data():
-    # Fetch market data from Redis
-    st.session_state.indices = {
-        "VNINDEX": RealtimeDataProvider.get_market_index_info("VNINDEX"),
-        "VN30": RealtimeDataProvider.get_market_index_info("VN30"),
-        "HNX": RealtimeDataProvider.get_market_index_info("HNX"),
-        "HNX30": RealtimeDataProvider.get_market_index_info("HNX30"),
-        "UPCOM": RealtimeDataProvider.get_market_index_info("UPCOM"),
-        "VNXALLSHARE": RealtimeDataProvider.get_market_index_info("VNXALLSHARE"),
-    }
-
-    st.session_state.stock_data = RealtimeDataProvider.get_stock_data("BSI")
-    st.session_state.chart_data = YfinanceCrawler.download(
-        symbol=st.session_state.stock_data["symbol"],
-        interval="1d",
-        time_range="1y"
-    )
-
-    st.session_state.account_balance = InvestorsService.get_balance()
-    st.session_state.orders = []
-    st.session_state.holdings = InvestorsService.get_all_holdings()
-    st.session_state.selected_order_type = "LO"
-
-    st.session_state.last_fetch_time_trade = time.time()
-    return True
-
-# Fetch data periodically
-now = time.time()
-if now - st.session_state.last_fetch_time_trade > REFRESH_INTERVAL_SECONDS:
-    fetch_trading_data()
-    needs_rerun = True
-else:
-    needs_rerun = False
+data_updated = DataFetcher.fetch_and_update_trading_data(force_fetch_account=False)
 
 st.title("Trading Interface")
 st.write(f"User: {st.session_state.username} ({st.session_state.user_id})")
@@ -84,7 +45,13 @@ with col_left:
 
 with col_mid:
     with st.container():
-        display_order_entry()
+        submitted_form_data = display_order_entry()
+        order_processed_successfully = False
+        if submitted_form_data:
+            order_processed_successfully = OrderPayloadProcessor.create_payload(form_data=submitted_form_data)
+            if order_processed_successfully:
+                DataFetcher.fetch_and_update_trading_data(force_fetch_account=True)
+                data_updated = True
 
 with col_right:
     with st.container(border=True):
@@ -93,11 +60,13 @@ with col_right:
         display_balance()
 
 
-if needs_rerun:
-     time.sleep(0.1)
-     try: st.rerun()
-     except Exception as e: LOGGER.error(f"Rerun failed: {e}"); time.sleep(REFRESH_INTERVAL_SECONDS); st.rerun()
+if data_updated:
+    LOGGER.info("Data was updated, signaling potential rerun.")
 else:
-     time.sleep(REFRESH_INTERVAL_SECONDS)
-     try: st.rerun()
-     except Exception as e: LOGGER.error(f"Rerun failed: {e}"); time.sleep(REFRESH_INTERVAL_SECONDS); st.rerun()
+    time.sleep(REFRESH_INTERVAL_SECONDS)
+    try:
+        st.rerun()
+    except Exception as e:
+        LOGGER.error(f"Periodic rerun failed: {e}")
+        time.sleep(REFRESH_INTERVAL_SECONDS) # Đợi lâu hơn nếu lỗi
+        st.rerun()

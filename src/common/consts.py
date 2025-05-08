@@ -1,5 +1,6 @@
 import os
 import random
+import pandas as pd
 
 class SQLServerConsts:
     ASYNC_DNS = os.getenv("ASYNC_DNS")
@@ -39,7 +40,7 @@ class MessageConsts:
     INTERNAL_SERVER_ERROR = "Unknown internal server error"
 
 class DNSEConsts:
-    BROKER = 'datafeed-lts.dnse.com.vn'
+    BROKER = 'datafeed-lts-krx.dnse.com.vn'
     PORT = 443
     CLIENT_ID = f'python-json-mqtt-ws-sub-{random.randint(0, 1000)}'
     FIRST_RECONNECT_DELAY = 1

@@ -3,12 +3,10 @@ class DNSEConfigs:
 
     KEY_STOCK_INFO = "SI"
     KEY_OHLC = "OHLC"
-    KEY_SESSION = "SESSION"
     KEY_TICK = "TICK"
     KEY_MARKET = "MARKET"
 
-    TOPIC_STOCK_INFO = "plaintext/quotes/stock/SI"
-    TOPIC_SESSION = "plaintext/quotes/session"
-    TOPIC_OHLC_1M = "plaintext/quotes/stock/OHLC/1"
-    TOPIC_TICK = "plaintext/quotes/stock/tick"
-    TOPIC_MARKET = "plaintext/quotes/index/MI"
+    TOPIC_STOCK_INFO = "plaintext/quotes/krx/mdds/stockinfo/v1/roundlot/symbol"
+    TOPIC_OHLC_1M = "plaintext/quotes/krx/mdds/v2/ohlc/stock/1"
+    TOPIC_TICK = "plaintext/quotes/krx/mdds/tick/v1/roundlot/symbol"
+    TOPIC_MARKET = "plaintext/quotes/krx/mdds/index"

@@ -18,8 +18,8 @@ FAKE_ROLES = {
 class AuthService:
     @classmethod
     def initialize_auth_state(cls):
-        """Initializes session state variables related to authentication."""
         if "logged_in" not in st.session_state:
+            print("Logged in not in session state, initializing...")
             st.session_state.logged_in = False
             st.session_state.username = None
             st.session_state.user_id = None
@@ -104,8 +104,7 @@ class AuthService:
 
     @classmethod
     def require_login(cls, role: Optional[str] = None):
-        """Decorator or function to protect pages/parts of pages."""
-        cls.initialize_auth_state() # Ensure state exists
+        cls.initialize_auth_state()
         if not st.session_state.logged_in:
             st.warning("Please log in to access this page.", icon="🔒")
             st.stop()

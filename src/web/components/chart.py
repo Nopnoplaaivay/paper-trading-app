@@ -5,6 +5,9 @@ import plotly.graph_objects as go
 def display_chart():
     st.subheader(f"Biểu đồ {st.session_state.stock_data['symbol']}")
     df = st.session_state.chart_data
+    if df is None:
+        # Hien thi bieu do trong truong hop khong co du lieu
+        st.error("Không có dữ liệu biểu đồ")
     last_close = df['close'].iloc[-1]
 
     fig = go.Figure(data=[go.Candlestick(

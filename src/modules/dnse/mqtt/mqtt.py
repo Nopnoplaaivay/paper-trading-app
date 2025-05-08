@@ -21,8 +21,8 @@ MQTT_TOPICS = [
     (DNSEConfigs.TOPIC_STOCK_INFO + "/+", 0),
     (DNSEConfigs.TOPIC_TICK + "/+", 0),
     (DNSEConfigs.TOPIC_OHLC_1M + "/+", 0),
-    (DNSEConfigs.TOPIC_SESSION + "/+", 0),
     (DNSEConfigs.TOPIC_MARKET + "/+", 0),
+    # (DNSEConfigs.TOPIC_BOARD_EVENT + "/+", 0),
 ]
 
 class DNSEMqtt:
@@ -55,7 +55,7 @@ class DNSEMqtt:
     @classmethod
     def get_account_info(cls):
         """Get token"""
-        login_url = "https://services.entrade.com.vn/dnse-auth-service/login"
+        login_url = "https://api.dnse.com.vn/user-service/api/auth"
         payload = {"username": USERNAME, "password": PASSWORD}
         try:
             res = requests.post(login_url, json=payload, verify=False)
@@ -65,7 +65,7 @@ class DNSEMqtt:
             raise Exception(f"Failed to get token: {e}")
 
         """Get investor_id"""
-        investor_info_url = "https://services.entrade.com.vn/dnse-user-service/api/me"
+        investor_info_url = "https://api.dnse.com.vn/user-service/api/me"
         headers = {"Authorization": f"Bearer {token}"}
         try:
             res = requests.get(investor_info_url, headers=headers, verify=False)
@@ -131,7 +131,7 @@ class DNSEMqtt:
         try:
             # Chỉ đưa vào queue, không xử lý nặng ở đây
             MESSAGE_QUEUE.put((msg.topic, msg.payload.decode('utf-8')))
-            # LOGGER.info(f"Received message on topic '{msg.topic} - {msg.payload.decode('utf-8')}'.")
-            LOGGER.info(f"Received message on topic '{msg.topic}'.")
+            LOGGER.info(f"Received message on topic '{msg.topic} - {msg.payload.decode('utf-8')}'.")
+            # LOGGER.info(f"Received message on topic '{msg.topic}'.")
         except Exception as e:
             LOGGER.error(f"Lỗi trong on_message khi đưa vào queue: {e}", exc_info=True)

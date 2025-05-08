@@ -67,10 +67,6 @@ class RedisWorker:
                 if symbol:
                     redis_key = f"{DNSEConfigs.KEY_STOCK_INFO}:{symbol}"
                     redis_conn.hset(redis_key, mapping=data)
-            elif topic.startswith(DNSEConfigs.TOPIC_SESSION):
-                floor_code = topic.split("/")[-1]
-                redis_key = f"{DNSEConfigs.KEY_SESSION}:{floor_code}"
-                redis_conn.hset(redis_key, mapping=data)
             elif topic.startswith(DNSEConfigs.TOPIC_OHLC_1M):
                 symbol = data.get("symbol")
                 if symbol:

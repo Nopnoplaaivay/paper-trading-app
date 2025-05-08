@@ -9,18 +9,14 @@ from src.common.consts import YfinanceConsts
 
 
 class YfinanceCrawler:
-    MARKET = "VN"  # Assuming this is a constant for the market suffix
-
     @classmethod
     def download(
         cls, symbol: str = "BID", interval: str = "1d", time_range: str = "1y"
     ) -> pd.DataFrame:
         if time_range not in YfinanceConsts.VALID_RANGES:
             raise ValueError(f"Invalid range value: {time_range}")
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}.{cls.MARKET}?interval={interval}&range={time_range}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
-        }
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}.VN?events=capitalGain%7Cdiv%7Csplit&formatted=true&includeAdjustedClose=true&interval={interval}&period1=1714953600&period2=1746635464&symbol={symbol}.VN&userYfid=true&lang=en-US&region=US"
+        headers = {"User-Agent": "PostmanRuntime/7.43.4",}
         try:
             response = requests.get(url, headers=headers)
             data = response.json()
@@ -38,6 +34,7 @@ class YfinanceCrawler:
             df = df.dropna()
             return df
         except Exception as e:
+            raise e
             LOGGER.error(f"Failed to fetch data for {symbol}: {e}")
             st.warning(f"Yfinance doesn't provide data for {symbol}")
             return pd.DataFrame()

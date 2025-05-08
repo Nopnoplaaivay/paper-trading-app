@@ -2,22 +2,16 @@ import time
 import streamlit as st
 
 from src.web.auth import AuthService
-# from src.auth import login_user, register_user, initialize_auth_state, logout_user
 from src.utils.logger import LOGGER
 
 st.set_page_config(layout="centered", page_title="Login/Register")
 
-# initialize_auth_state() # Make sure auth state is set up
+AuthService.initialize_auth_state()
 
-# --- Main App Logic ---
-# if st.session_state.logged_in:
-#     # If already logged in, show welcome and logout
-#     st.success(f"Welcome, {st.session_state.username}! (Role: {st.session_state.user_role})")
-#     st.write("Navigate using the sidebar.")
-#
-#
-# else:
-    # If not logged in, show Login/Register options
+
+if st.session_state.logged_in:
+    st.success(f"Welcome, {st.session_state.username}! (Role: {st.session_state.user_role})")
+
 st.title("Trading App Login")
 
 login_tab, register_tab = st.tabs(["Login", "Register"])
@@ -39,7 +33,6 @@ with login_tab:
             else:
                 st.error(st.session_state.get("login_error", "Login Failed"), icon="🚨")
 
-
 with register_tab:
      with st.form("register_form"):
         reg_username = st.text_input("Choose Username", key="reg_user")
@@ -55,10 +48,9 @@ with register_tab:
         if reg_submitted:
             if reg_password != reg_confirm_password:
                 st.error("Passwords do not match.", icon="⚠️")
-            elif not reg_username or not reg_password or not reg_role: # Basic validation
+            elif not reg_username or not reg_password or not reg_role:
                 st.error("Please fill in all fields.", icon="⚠️")
             else:
-                # Call the registration API
                 if AuthService.register(reg_username, reg_password, reg_confirm_password, reg_role, type_broker, type_client):
                     st.success("Registration successful! Please log in.")
                     time.sleep(1)

@@ -3,7 +3,7 @@ from src.modules.yfinance.crawler import YfinanceCrawler
 
 if __name__ == "__main__":
     # Test the YfinanceCrawler
-    symbol = "BID"
+    symbol = "VCB"
     interval = "1d"
     time_range = "1y"
 

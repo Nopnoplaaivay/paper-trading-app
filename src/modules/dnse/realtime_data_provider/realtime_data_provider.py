@@ -36,10 +36,11 @@ class RealtimeDataProvider:
                 errors="MARKET_INFO_NOT_FOUND",
             )
 
-        index_value = float(market_info.get("indexValue", 1500))
-        changed = float(market_info.get("changed", 0))
-        last_value = float(index_value) + float(changed)
-        pct_changed = (float(changed) / last_value) * 100 if last_value else 0
+        index_value = float(market_info.get("valueIndexes", 1500))
+        changed = float(market_info.get("changedValue", 0))
+        # last_value = float(index_value) + float(changed)
+        # pct_changed = (float(changed) / last_value) * 100 if last_value else 0
+        pct_changed = float(market_info.get("changedRatio", 0))
 
         return {
             "market_id": market_id,
