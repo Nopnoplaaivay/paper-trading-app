@@ -38,7 +38,7 @@ def display_chart():
             height=350,
             xaxis_rangeslider_visible=False,
             margin=dict(l=10, r=10, t=10, b=10),
-            yaxis_tickformat=','
+            yaxis_tickformat=',',
         )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#141721')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#141721')

@@ -33,7 +33,8 @@ st.divider()
 col_left, col_mid, col_right = st.columns([6, 2, 2])
 
 with col_left:
-    display_chart()
+    with st.container(border=True):
+        display_chart()
     tab_holdings, tab_orders = st.tabs(["Danh mục", "Sổ lệnh"])
     with tab_holdings:
         display_holdings()
