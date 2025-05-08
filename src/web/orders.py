@@ -1,5 +1,5 @@
 import streamlit as st
-from typing import Dict,  Any
+from typing import Dict, Any, List
 
 from src.web.requests_utils import RequestUtils
 
@@ -10,3 +10,10 @@ class OrdersService:
         if response:
             return response.get("data")
         return {"error": "Failed to place order"}
+
+
+    @classmethod
+    def get_today_orders(cls) -> List[Dict[str, Any]]:
+        st.session_state.login_error = None
+        response = RequestUtils.call_api("GET", "/orders-service/orders")
+        return response.get("data")

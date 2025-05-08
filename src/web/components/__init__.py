@@ -5,3 +5,4 @@ from .balance import display_balance
 from .indices import display_index_tickers
 from .holdings import display_holdings
 from .orders_list import display_order_list
+from .header import display_app_header

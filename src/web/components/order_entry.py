@@ -65,10 +65,13 @@ def display_order_entry():
             }
             LOGGER.debug(f"Order form submitted with data: {form_data}")
 
-        holdings = st.session_state.get("holdings", {})
-        holding_info = holdings.get(current_symbol, None)
+        holdings = st.session_state.holdings
+        if holdings:
+            holding_info = holdings.get(current_symbol, None)
+            available_shares = holding_info.get("quantity", 0) if holding_info else 0
+        else:
+            available_shares = 0
 
-        available_shares = holding_info.get("quantity", 0) if holding_info else 0
         price_for_calc = input_price if order_type_form == "LO" and input_price else current_price
         buying_power = st.session_state.account_balance.get("purchasing_power", 0)
         max_buy_qty = int(buying_power // (price_for_calc * 1000)) if price_for_calc and price_for_calc > 0 else 0

@@ -1,5 +1,5 @@
 import streamlit as st
-from typing import Dict,  Any
+from typing import Dict, Any, List
 
 from src.web.requests_utils import RequestUtils
 

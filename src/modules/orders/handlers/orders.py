@@ -31,6 +31,17 @@ async def get_power(payload: PowerDTO):
     )
     return JSONResponse(status_code=response.http_code, content=response.to_dict())
 
+@orders_router.get("/orders", dependencies=[Depends(auth_guard)])
+async def get_orders(user: JwtPayload = Depends(UserPayload)):
+    orders = await OrdersService.get_orders(payload=user)
+    response = SuccessResponse(
+        http_code=200,
+        status_code=200,
+        message=MessageConsts.SUCCESS,
+        data=orders,
+    )
+    return JSONResponse(status_code=response.http_code, content=response.to_dict())
+
 @orders_router.post("/orders", dependencies=[Depends(auth_guard)])
 async def place_order(payload: OrdersDTO, user: JwtPayload = Depends(UserPayload)):
     order = await OrdersService.place_order(payload=payload, user=user)

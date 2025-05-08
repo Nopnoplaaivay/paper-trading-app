@@ -13,23 +13,20 @@ from src.web.components import (
     display_price_info,
     display_balance,
     display_holdings,
+    display_app_header,
 )
 from src.utils.logger import LOGGER
 from src.web.fetch_data import DataFetcher
 
-LOGGER.info(f"Session state on entry: logged_in={st.session_state.get('logged_in')}, role={st.session_state.get('user_role')}")
 
 AuthService.require_login(role="client")
 REFRESH_INTERVAL_SECONDS = 3
 
 
-data_updated = DataFetcher.fetch_and_update_trading_data(force_fetch_account=False)
+data_updated = DataFetcher.fetch_and_update_trading_data(force_fetch_account=True)
 
-st.title("Trading Interface")
-st.write(f"User: {st.session_state.username} ({st.session_state.user_id})")
-st.divider()
+display_app_header()
 
-# --- Render UI ---
 display_index_tickers()
 st.divider()
 

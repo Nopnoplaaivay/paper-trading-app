@@ -3,19 +3,14 @@ import json
 from typing import Optional, Dict, Any
 import streamlit as st
 
+from src.web.cookies import WebCookieController
 from src.web.configs import WebConfigs
 from src.utils.logger import LOGGER
 
 class RequestUtils:
     @classmethod
-    def get_auth_token(cls) -> Optional[str]:
-        """Retrieves auth token from session state."""
-        return st.session_state.get("auth_token")
-
-    @classmethod
     def call_api(cls, method: str, endpoint: str, payload: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
-        """Generic function to call the backend API."""
-        token = cls.get_auth_token()
+        token = WebCookieController.get("accessToken")
         headers = {}
         if token:
             headers["Authorization"] = f"Bearer {token}"

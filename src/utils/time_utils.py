@@ -6,8 +6,7 @@ class TimeUtils:
     @classmethod
     def get_current_vn_time(cls):
         utcnow = datetime.datetime.now()
-        return utcnow
-        # return pytz.timezone('Asia/Ho_Chi_Minh').utcoffset(utcnow) + utcnow
+        return pytz.timezone('Asia/Ho_Chi_Minh').utcoffset(utcnow) + utcnow
 
     @classmethod
     def get_utc_current_time(cls):

@@ -34,14 +34,6 @@ async def get_balance(payload: JwtPayload = Depends(UserPayload)):
 @investors_router.get("/holdings", dependencies=[Depends(auth_guard)])
 async def get_all_holdings(payload: JwtPayload = Depends(UserPayload)):
     account_holdings = await HoldingsService.get_all_holdings(payload=payload)
-    if not account_holdings:
-        response = BaseResponse(
-            http_code=404,
-            status_code=404,
-            message=MessageConsts.NOT_FOUND,
-            errors="Account holdings not found",
-        )
-        return JSONResponse(status_code=response.http_code, content=response.to_dict())
     response = SuccessResponse(
         http_code=200,
         status_code=200,

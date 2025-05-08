@@ -3,8 +3,8 @@ import hashlib
 import uuid
 import jwt
 from cachetools import TTLCache
-from datetime import datetime, timedelta
-from typing import Dict, Optional
+from datetime import timedelta
+from typing import Dict
 
 from src.common.consts import MessageConsts, CommonConsts, SQLServerConsts
 from src.modules.base.query_builder import TextSQL
@@ -19,9 +19,7 @@ from src.utils.jwt_utils import JWTUtils
 from src.utils.time_utils import TimeUtils
 from src.utils.logger import LOGGER
 
-
 black_list = TTLCache(maxsize=1000, ttl=24 * 60 * 60)
-
 
 class AuthService:
     @classmethod
@@ -119,8 +117,10 @@ class AuthService:
 
         access_token = JWTUtils.create_access_token(payload=at_payload)
         refresh_token = JWTUtils.create_refresh_token(payload=rt_payload)
+        account_info = (await AccountsRepo.get_by_condition({Accounts.user_id.name: user[Users.id.name]}))[0]
+        account_id = account_info[Accounts.id.name]
 
-        return {"accessToken": access_token, "refreshToken": refresh_token}
+        return {"accessToken": access_token, "refreshToken": refresh_token, "accountId": account_id}
 
     @classmethod
     async def logout(cls, payload: LogoutDTO):

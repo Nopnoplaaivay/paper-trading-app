@@ -1,11 +1,12 @@
 from typing import Optional, Dict, Any
+
+from src.web.cookies import WebCookieController
+from src.web.orders import OrdersService
 from src.utils.logger import LOGGER
 
-from src.web.orders import OrdersService
-
 class OrderPayloadProcessor:
-    @staticmethod
-    def create_payload(form_data: dict) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def create_payload(cls, form_data: dict) -> Optional[Dict[str, Any]]:
         if not form_data or not form_data.get("submitted"):
             LOGGER.warning("Payload creation skipped: No submitted form data.")
             return None
@@ -16,6 +17,8 @@ class OrderPayloadProcessor:
             quantity = int(form_data.get("quantity", 0))
             order_type = form_data.get("order_type") # Should be 'LO' or 'MP'
             price = form_data.get("price") if order_type == "LO" else None
+            account_id = WebCookieController.get("accountId")
+            print(f"Account ID: {account_id}")
 
             if not symbol or side not in ["SIDE_BUY", "SIDE_SELL"] or quantity <= 0 or order_type not in ["LO", "MP"]:
                 LOGGER.error(f"Payload creation failed: Invalid base data. Symbol: {symbol}, Side: {side}, Qty: {quantity}, Type: {order_type}")
@@ -30,7 +33,7 @@ class OrderPayloadProcessor:
                 "qtty": quantity,
                 "order_type": order_type,
                 "price": int(price * 1000),
-                "account_id": "5dad15a7-5f7c-43a6-84f0-17558a9bcdd6"
+                "account_id": account_id,
             }
 
             OrdersService.place_order(order_payload=order_payload)

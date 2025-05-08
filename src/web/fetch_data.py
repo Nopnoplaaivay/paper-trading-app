@@ -3,6 +3,7 @@ import time
 
 
 from src.web.investors import InvestorsService
+from src.web.orders import OrdersService
 from src.modules.yfinance.crawler import YfinanceCrawler
 from src.modules.dnse.realtime_data_provider import RealtimeDataProvider
 from src.utils.logger import LOGGER
@@ -40,7 +41,7 @@ class DataFetcher:
 
         if 'account_balance' not in st.session_state or st.session_state.last_fetch_time_trade == now or force_fetch_account:
             st.session_state.account_balance = InvestorsService.get_balance()
-            st.session_state.orders = []
+            st.session_state.orders = OrdersService.get_today_orders()
             st.session_state.holdings = InvestorsService.get_all_holdings()
             data_was_updated = True
 
@@ -74,7 +75,3 @@ class DataFetcher:
             )
         except Exception as e:
             st.session_state.chart_data = None
-            st.error(f"Error fetching chart data: {e}")
-
-
-

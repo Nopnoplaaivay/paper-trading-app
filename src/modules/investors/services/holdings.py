@@ -4,17 +4,17 @@ from src.modules.investors.repositories import AccountsRepo, HoldingsRepo
 from src.modules.auth.types import JwtPayload
 
 class HoldingsService:
-    repo = AccountsRepo
+    repo = HoldingsRepo
 
     @classmethod
     async def get_all_holdings(cls, payload: JwtPayload):
         conditions = {Accounts.user_id.name: payload.userId}
-        records = await cls.repo.get_by_condition(conditions=conditions)
+        records = await AccountsRepo.get_by_condition(conditions=conditions)
         holdings = {}
         if records:
             record = records[0]
             holdings_condition = {Holdings.account_id.name: record[Accounts.id.name]}
-            raw_holdings = await HoldingsRepo.get_by_condition(conditions=holdings_condition)
+            raw_holdings = await cls.repo.get_by_condition(conditions=holdings_condition)
             if raw_holdings:
                 for holding in raw_holdings:
                     market_price = RealtimeDataProvider.get_market_price(holding[Holdings.symbol.name])

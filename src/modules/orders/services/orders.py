@@ -1,3 +1,4 @@
+import datetime
 from uuid import uuid4
 
 from src.cache.connector import REDIS_POOL
@@ -113,7 +114,7 @@ class OrdersService:
                             errors="QUANTITY_EXCEEDS_HOLDING",
                         )
 
-        except Exception:
+        except Exception as e:
             raise BaseExceptionResponse(
                 http_code=404,
                 status_code=404,
@@ -193,6 +194,34 @@ class OrdersService:
                 errors="Order not found",
             )
         return True
+
+    @classmethod
+    async def get_orders(cls, payload: JwtPayload):
+        """Check user permission"""
+        try:
+            conditions = {Accounts.user_id.name: payload.userId}
+            records = await AccountsRepo.get_by_condition(conditions=conditions)
+            if records:
+                record = records[0]
+                account_id = record[Accounts.id.name]
+                conditions = {Orders.account_id.name: account_id}
+                orders = await cls.repo.get_by_condition(conditions=conditions)
+
+                today_orders = []
+                for order in orders:
+                    print(datetime.datetime.strptime(order["__created_at__"], "%Y-%m-%d %H:%M:%S"))
+                    print(TimeUtils.get_current_vn_time())
+                    if datetime.datetime.strptime(order["__created_at__"], "%Y-%m-%d %H:%M:%S").date() == TimeUtils.get_current_vn_time().date():
+                        today_orders.append(order)
+
+                return today_orders
+        except Exception as e:
+            raise BaseExceptionResponse(
+                http_code=404,
+                status_code=404,
+                message=MessageConsts.NOT_FOUND,
+                errors=str(e),
+            )
 
 
     @classmethod
