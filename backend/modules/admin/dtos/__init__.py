@@ -1,1 +1,1 @@
-from .admin import UpdateUserRoleDTO
+from .admin import UpdateUserRoleDTO, AdminCancelOrdersDTO

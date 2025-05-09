@@ -22,10 +22,9 @@ def display_order_entry():
             st.session_state.stock_data = DataService.fetch_stock_data()
             st.session_state.last_fetch_time_trade = 0
 
-    stock_folder = os.path.join(CommonConsts.ROOT_FOLDER, "frontend", "stocks")
-    stock_list = pd.read_csv(f"{stock_folder}\\stocks.csv")["ticker"].tolist()
+    stock_file_path = os.path.join(CommonConsts.ROOT_FOLDER, "frontend", "stocks", "stocks.csv")
+    stock_list = pd.read_csv(stock_file_path)["ticker"].tolist()
 
-    # --- Input Widgets ---
     selected_symbol = st.selectbox(
         "Mã CK:",
         options=stock_list,

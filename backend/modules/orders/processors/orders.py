@@ -79,6 +79,7 @@ class OrdersProcessors:
                 account = (await AccountsRepo.get_by_condition(conditions=conditions))[0]
 
                 update_securing_amount = account["securing_amount"] - order["quantity"] * order["price"]
+                print(f"update_securing_amount: {update_securing_amount}")
                 await AccountsRepo.update(
                     record={
                         Accounts.id.name: account["id"],

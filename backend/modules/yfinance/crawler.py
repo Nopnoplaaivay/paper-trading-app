@@ -1,6 +1,4 @@
-import aiohttp
 import requests
-import asyncio
 import pandas as pd
 import streamlit as st
 

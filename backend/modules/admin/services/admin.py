@@ -5,15 +5,17 @@ from backend.common.consts import SQLServerConsts
 from backend.modules.base.query_builder import TextSQL
 from backend.modules.investors.entities import Accounts, Transactions, Holdings
 from backend.modules.investors.repositories import AccountsRepo, TransactionsRepo, HoldingsRepo
-from backend.modules.investors.dtos import DepositDTO, WithdrawDTO
 from backend.modules.users.entities import Users
 from backend.modules.users.repositories import UsersRepo
-from backend.modules.auth.types import JwtPayload
+from backend.modules.orders.entities import Orders
+from backend.modules.orders.repositories import OrdersRepo
+from backend.modules.orders.processors import OrdersProcessors
 from backend.common.consts import MessageConsts
 
 
 class AdminService:
     repo = UsersRepo
+    orders_repo = OrdersRepo
 
     @classmethod
     async def get_all_users(cls):
@@ -40,3 +42,18 @@ class AdminService:
             returning=True
         )
         return updated_user
+
+    @classmethod
+    async def get_all_orders(cls):
+        orders = await cls.orders_repo.get_all()
+        return orders
+
+    @classmethod
+    async def cancel_order(cls, payload):
+        order = (await cls.orders_repo.get_by_id(payload.order_id))[0]
+        if not order:
+            return False
+        if order[Orders.status.name] == "PENDING":
+            await OrdersProcessors.update_on_cancel(order=order)
+            return True
+        return False
