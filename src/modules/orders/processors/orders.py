@@ -126,7 +126,7 @@ class OrdersProcessors:
                         returning=False,
                     )
                     await session.commit()
-            LOGGER.info(f"Order {order['id']} MATCHED. Account {order['account_id']} has bought {order['quantity']} shares of {order['symbol']} at {order['price']}.")
+            LOGGER.info(f"[MATCHED BUY ORDER] - {order['id']}. {order['account_id']} - {order['symbol']} - {order['price']} - {order['quantity']}.")
 
         elif order["side"] == "SIDE_SELL":
             async with AccountsRepo.session_scope() as session:
@@ -171,7 +171,7 @@ class OrdersProcessors:
                 )
                 await session.commit()
 
-            LOGGER.info(f"Order {order['id']} MATCHED. Account {order['account_id']} has sold {order['quantity']} shares of {order['symbol']} at {order['price']}.")
+            LOGGER.info(f"[MATCHED SELL ORDER] - {order['id']}. {order['account_id']} - {order['symbol']} - {order['price']} - {order['quantity']}.")
 
         await OrdersRepo.update(
             record={

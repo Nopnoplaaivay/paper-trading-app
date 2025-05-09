@@ -2,8 +2,8 @@ import streamlit as st
 
 st.set_page_config(layout="centered", page_title="Welcome - Trading App Simulation")
 
-from src.web.cookies import WebCookieController # To check login status
-from src.web.auth import AuthService # To initialize state if needed
+from src.web.cookies import WebCookieController
+from src.web.services import AuthService
 
 
 st.title("Welcome to the Trading App!")

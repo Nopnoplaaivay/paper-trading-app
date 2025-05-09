@@ -2,15 +2,15 @@ import streamlit as st
 import time
 
 
-from src.web.investors import InvestorsService
-from src.web.orders import OrdersService
+from src.web.services.investors import InvestorsService
+from src.web.services.orders import OrdersService
 from src.modules.yfinance.crawler import YfinanceCrawler
 from src.modules.dnse.realtime_data_provider import RealtimeDataProvider
 from src.utils.logger import LOGGER
 
 REFRESH_INTERVAL_SECONDS = 3
 
-class DataFetcher:
+class DataService:
     @classmethod
     def fetch_and_update_trading_data(cls, force_fetch_account: bool = False) -> bool:
         data_was_updated = False

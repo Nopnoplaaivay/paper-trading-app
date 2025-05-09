@@ -26,6 +26,8 @@ class AuthService:
             access_token = response.get("data").get("accessToken")
             account_id = response.get("data").get("accountId")
 
+            print(f"Access Token: {access_token}")
+
             # Clear cookies before setting new ones
             WebCookieController.clear()
 

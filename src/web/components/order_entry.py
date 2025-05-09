@@ -2,8 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 
-from src.web.orders import OrdersService
-from src.web.fetch_data import DataFetcher
+from src.web.services import DataService
 from src.modules.orders.entities import OrderSide
 from src.common.consts import CommonConsts
 from src.utils.logger import LOGGER
@@ -20,7 +19,7 @@ def display_order_entry():
         if new_symbol and new_symbol != st.session_state.current_symbol:
             LOGGER.info(f"Symbol changed via input: {st.session_state.current_symbol} -> {new_symbol}")
             st.session_state.current_symbol = new_symbol
-            st.session_state.stock_data = DataFetcher.fetch_stock_data()
+            st.session_state.stock_data = DataService.fetch_stock_data()
             st.session_state.last_fetch_time_trade = 0
 
     stock_folder = os.path.join(CommonConsts.ROOT_FOLDER, "src", "web", "stocks")

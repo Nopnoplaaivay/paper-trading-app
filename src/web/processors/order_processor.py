@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any
 
 from src.web.cookies import WebCookieController
-from src.web.orders import OrdersService
+from src.web.services.orders import OrdersService
 from src.utils.logger import LOGGER
 
 class OrderPayloadProcessor:

@@ -3,7 +3,7 @@ import time
 
 st.set_page_config(layout="wide", page_title="Trading Interface")
 
-from src.web.auth import AuthService
+from src.web.services import AuthService
 from src.web.processors import OrderPayloadProcessor
 from src.web.components import (
     display_chart,
@@ -16,14 +16,14 @@ from src.web.components import (
     display_app_header,
 )
 from src.utils.logger import LOGGER
-from src.web.fetch_data import DataFetcher
+from src.web.services import DataService
 
 
 AuthService.require_login(role="client")
 REFRESH_INTERVAL_SECONDS = 3
 
 
-data_updated = DataFetcher.fetch_and_update_trading_data(force_fetch_account=True)
+data_updated = DataService.fetch_and_update_trading_data(force_fetch_account=True)
 
 display_app_header()
 
@@ -48,7 +48,7 @@ with col_mid:
         if submitted_form_data:
             order_processed_successfully = OrderPayloadProcessor.create_payload(form_data=submitted_form_data)
             if order_processed_successfully:
-                DataFetcher.fetch_and_update_trading_data(force_fetch_account=True)
+                DataService.fetch_and_update_trading_data(force_fetch_account=True)
                 data_updated = True
 
 with col_right:

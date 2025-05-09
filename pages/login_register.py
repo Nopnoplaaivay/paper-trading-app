@@ -3,7 +3,7 @@ import streamlit as st
 
 st.set_page_config(layout="centered", page_title="Login/Register")
 
-from src.web.auth import AuthService
+from src.web.services import AuthService
 from src.web.cookies import WebCookieController
 from src.utils.logger import LOGGER
 

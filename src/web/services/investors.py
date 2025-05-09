@@ -1,6 +1,7 @@
 import streamlit as st
 from typing import Dict, Any, List
 
+from src.web.cookies import WebCookieController
 from src.web.requests_utils import RequestUtils
 
 
@@ -26,3 +27,14 @@ class InvestorsService:
         if response:
             return response.get("data")
         return None
+
+    @classmethod
+    def deposit(cls, amount: int) -> Dict[str, Any]:
+        st.session_state.login_error = None
+        payload = {
+            "account_id": WebCookieController.get("accountId"),
+            "amount": amount,
+            "payment_method": "banking",
+        }
+        response = RequestUtils.call_api("POST", "/investors-service/deposit", payload=payload)
+        return response
