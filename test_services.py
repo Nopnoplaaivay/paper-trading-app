@@ -1,11 +1,11 @@
 import asyncio
 
-from src.modules.users.entities import Users
-from src.modules.auth.services import AuthService
-from src.modules.users.services import UserService
-from src.modules.auth.dtos import RegisterDTO, LoginDTO
-from src.modules.auth.types import JwtPayload, RefreshPayload
-from src.utils.time_utils import TimeUtils
+from backend.modules.users.entities import Users
+from backend.modules.auth.services import AuthService
+from backend.modules.users.services import UserService
+from backend.modules.auth.dtos import RegisterDTO, LoginDTO
+from backend.modules.auth.types import JwtPayload, RefreshPayload
+from backend.utils.time_utils import TimeUtils
 
 
 async def test_register():
@@ -14,9 +14,7 @@ async def test_register():
         account="ltduong6124",
         password="asd123456",
         confirm_password="asd123456",
-        role="admin",
-        type_broker="",
-        type_client="",
+        role="admin"
     )
     await AuthService.register(payload=register_payload)
 

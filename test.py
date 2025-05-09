@@ -1,8 +1,8 @@
-from src.modules.yfinance.crawler import YfinanceCrawler
+from backend.modules.yfinance.crawler import YfinanceCrawler
 
 import asyncio
 from sqlalchemy import text
-from src.db.sessions import backend_session_scope
+from backend.db.sessions import backend_session_scope
 
 
 # async def example_usage():

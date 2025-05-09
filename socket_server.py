@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import json
 
-from src.websocket import TradeData
+from backend.websocket import TradeData
 
 app = FastAPI()
 

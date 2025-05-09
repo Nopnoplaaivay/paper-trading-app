@@ -3,9 +3,9 @@ import time
 
 st.set_page_config(layout="wide", page_title="Trading Interface")
 
-from src.web.services import AuthService
-from src.web.processors import OrderPayloadProcessor
-from src.web.components import (
+from frontend.services import AuthService
+from frontend.processors import OrderPayloadProcessor
+from frontend.components import (
     display_chart,
     display_index_tickers,
     display_order_list,
@@ -15,8 +15,9 @@ from src.web.components import (
     display_holdings,
     display_app_header,
 )
-from src.utils.logger import LOGGER
-from src.web.services import DataService
+from frontend.services import DataService
+
+from backend.utils.logger import LOGGER
 
 
 AuthService.require_login(role="client")
@@ -25,7 +26,7 @@ REFRESH_INTERVAL_SECONDS = 3
 
 data_updated = DataService.fetch_and_update_trading_data(force_fetch_account=True)
 
-display_app_header()
+display_app_header(page_name="trading")
 
 display_index_tickers()
 st.divider()

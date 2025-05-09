@@ -3,9 +3,9 @@ import streamlit as st
 
 st.set_page_config(layout="centered", page_title="Login/Register")
 
-from src.web.services import AuthService
-from src.web.cookies import WebCookieController
-from src.utils.logger import LOGGER
+from frontend.services import AuthService
+from frontend.cookies import WebCookieController
+from backend.utils.logger import LOGGER
 
 
 if WebCookieController.get("loggedIn"):
@@ -34,11 +34,7 @@ else:
                     try:
                         role = WebCookieController.get("role")
                         if role == "admin":
-                            target_page = "pages/trading_interface.py"
-                            # target_page = "pages/admin_panel.py"
-                        elif role == "broker":
-                            target_page = "pages/trading_interface.py"
-                            # target_page = "pages/broker_dashboard.py"
+                            target_page = "pages/admin_panel.py"
                         else:
                             target_page = "pages/trading_interface.py"
                         st.switch_page(target_page)

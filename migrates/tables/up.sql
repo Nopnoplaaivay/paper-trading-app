@@ -4,9 +4,7 @@ CREATE TABLE [Auth].[users] (
     [__updated_at__] VARCHAR(19) default (format(switchoffset(sysutcdatetime(),'+07:00'),'yyyy-MM-dd HH:mm:ss')) NOT NULL,
     [account] VARCHAR(255) UNIQUE NOT NULL, 
     [password] VARCHAR(255) NOT NULL,
-    [role] VARCHAR(50), 
-    [type_broker] VARCHAR(255) NULL,
-    [type_client] VARCHAR(255) NULL,
+    [role] VARCHAR(50)
 );
 
 GO

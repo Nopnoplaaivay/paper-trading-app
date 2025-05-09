@@ -33,7 +33,7 @@ COPY ./.env .env
 RUN ls -a
 RUN pip install -r requirements.txt
 
-ADD ./src ./src
+ADD ./backend ./backend
 # Run server
-COPY ./backend.py ./backend.py
-ENTRYPOINT ["python3", "backend.py"]
+COPY ./server.py ./server.py
+ENTRYPOINT ["python3", "server.py"]
