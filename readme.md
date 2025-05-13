@@ -1,5 +1,5 @@
 python api_server.py -a src.app:app -p 8000 -w 2
-streamlit run client.py
+streamlit run app.py
 
 
 docker build -t trading-app-frontend -f docker/Dockerfile.frontend .

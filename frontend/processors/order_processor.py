@@ -16,7 +16,7 @@ class OrderPayloadProcessor:
             side = form_data.get("submitted") # Should be 'SIDE_BUY' or 'SIDE_SELL'
             quantity = int(form_data.get("quantity", 0))
             order_type = form_data.get("order_type") # Should be 'LO' or 'MP'
-            price = form_data.get("price") if order_type == "LO" else None
+            price = form_data.get("price") if order_type == "LO" else 0
             account_id = WebCookieController.get("accountId")
             print(f"Account ID: {account_id}")
 

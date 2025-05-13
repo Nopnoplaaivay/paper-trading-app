@@ -60,7 +60,7 @@ else:
                 elif not reg_username or not reg_password or not reg_role:
                     st.error("Please fill in all fields.", icon="⚠️")
                 else:
-                    if AuthService.register(reg_username, reg_password, reg_confirm_password, reg_role, "", ""):
+                    if AuthService.register(reg_username, reg_password, reg_confirm_password, reg_role):
                         st.success("Registration successful! Please proceed to Login.")
                         time.sleep(2)
                     else:

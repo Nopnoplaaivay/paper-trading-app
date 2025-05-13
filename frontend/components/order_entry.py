@@ -59,7 +59,7 @@ def display_order_entry():
                 "symbol": selected_symbol,
                 "order_type": order_type_form,
                 "quantity": quantity_form_val,
-                "price": input_price if order_type_form == "LO" else "MP",
+                "price": input_price if order_type_form == "LO" else 0,
             }
             LOGGER.debug(f"Order form submitted with data: {form_data}")
 

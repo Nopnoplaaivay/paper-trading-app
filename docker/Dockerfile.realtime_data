@@ -33,7 +33,7 @@ COPY ./.env .env
 RUN ls -a
 RUN pip install -r requirements.txt
 
-ADD ./src ./src
+ADD ./backend ./backend
 # Run server
 COPY ./realtime_data.py ./realtime_data.py
 ENTRYPOINT ["python3", "realtime_data.py"]

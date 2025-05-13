@@ -136,14 +136,12 @@ class OrdersProcessors:
 
                 update_available_cash = account["available_cash"] + order["quantity"] * order["price"]
                 update_purchasing_power = account["purchasing_power"] + order["quantity"] * order["price"]
-                update_securing_amount = account["securing_amount"] - order["quantity"] * order["price"]
 
                 await AccountsRepo.update(
                     record={
                         Accounts.id.name: account["id"],
                         Accounts.available_cash.name: update_available_cash,
                         Accounts.purchasing_power.name: update_purchasing_power,
-                        Accounts.securing_amount.name: update_securing_amount,
                     },
                     identity_columns=[Accounts.id.name],
                     returning=False,
